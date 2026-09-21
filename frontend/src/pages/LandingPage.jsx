@@ -1,14 +1,5 @@
 import { useState } from "react";
-import {
-  Check,
-  X,
-  Eye,
-  EyeOff,
-  ArrowRight,
-  BriefcaseBusiness,
-  GraduationCap,
-  TrendingUp,
-} from "lucide-react";
+import {Check, X, Eye, EyeOff, ArrowRight, BriefcaseBusiness, GraduationCap, TrendingUp} from "lucide-react";
 
 function LandingPage() {
   const [drawer, setDrawer] = useState(null);
@@ -27,13 +18,9 @@ function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white text-slate-950 overflow-hidden">
-      {/* =========================
-          MAIN LANDING PAGE
-      ========================== */}
+      {/*MAIN LANDING PAGE*/}
       <main className="min-h-screen flex flex-col lg:flex-row">
-        {/* =========================
-            LEFT / HERO SECTION
-        ========================== */}
+        {/*LEFT / HERO SECTION*/}
         <section className="flex-1 flex items-center px-6 py-12 sm:px-10 lg:px-16 xl:px-24">
           <div className="w-full max-w-2xl mx-auto lg:mx-0">
             {/* Logo */}
@@ -51,7 +38,7 @@ function LandingPage() {
               </span>
             </div>
 
-            {/* Small heading */}
+            {/*Small heading*/}
             <p className="text-teal-600 font-medium text-sm sm:text-base mb-5">
               For college students navigating placements
             </p>
@@ -88,9 +75,7 @@ function LandingPage() {
           </div>
         </section>
 
-        {/* =========================
-            RIGHT CTA SECTION
-        ========================== */}
+        {/*RIGHT SECTION*/}
         <section className="lg:w-[38%] xl:w-[36%] bg-slate-50 border-t lg:border-t-0 lg:border-l border-slate-200 flex items-center">
           <div className="w-full max-w-md mx-auto px-6 py-14 sm:px-10 lg:px-12">
             {/* Logo */}
@@ -121,7 +106,7 @@ function LandingPage() {
               placement readiness.
             </p>
 
-            {/* CTA Buttons */}
+            {/*Buttons*/}
             <div className="mt-10 space-y-3">
               <button
                 type="button"
@@ -168,9 +153,7 @@ function LandingPage() {
         </section>
       </main>
 
-      {/* =========================
-          BACKDROP
-      ========================== */}
+      {/*BACKDROP*/}
       {drawer && (
         <div
           className="fixed inset-0 z-40 bg-slate-950/35 backdrop-blur-[2px]"
@@ -178,9 +161,7 @@ function LandingPage() {
         />
       )}
 
-      {/* =========================
-          LOGIN DRAWER
-      ========================== */}
+      {/*LOGIN DRAWER*/}
       <aside
         className={`fixed z-50 top-0 right-0 h-full w-full sm:w-110 lg:w-120
                     bg-white shadow-2xl
@@ -314,9 +295,7 @@ function LandingPage() {
         </div>
       </aside>
 
-      {/* =========================
-          SIGNUP DRAWER
-      ========================== */}
+      {/*SIGNUP DRAWER*/}
       <aside
         className={`fixed z-50 top-0 left-0 w-full
                     bg-white shadow-2xl
@@ -490,9 +469,7 @@ function LandingPage() {
   );
 }
 
-/* =========================
-   FEATURE COMPONENT
-========================== */
+/*FEATURE COMPONENT*/
 
 function Feature({ title, description }) {
   return (
@@ -516,9 +493,7 @@ function Feature({ title, description }) {
   );
 }
 
-/* =========================
-   ROLE SWITCH
-========================== */
+/*ROLE SWITCH*/
 
 function RoleSwitch({ role, setRole }) {
   return (
@@ -550,9 +525,7 @@ function RoleSwitch({ role, setRole }) {
   );
 }
 
-/* =========================
-   INPUT
-========================== */
+/*INPUT*/
 
 function InputField({
   label,
@@ -576,9 +549,7 @@ function InputField({
   );
 }
 
-/* =========================
-   ROLE CARD
-========================== */
+/*ROLE CARD*/
 
 function RoleCard({
   active,
