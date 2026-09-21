@@ -34,7 +34,7 @@ const navItems = [
   },
   {
     label: "Learn & Practice",
-    path: "/learn",
+    path: "/learn-and-practice",
     icon: GraduationCap,
   },
   {

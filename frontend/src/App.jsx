@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import LandingPage from './pages/LandingPage'
 import Dashboard from './pages/Dashboard'
 import Profile from './pages/Profile'
+import LearnAndPractice from './pages/LearnAndPractice'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -17,6 +18,9 @@ function App() {
       </Routes>
       <Routes>
         <Route path="/profile" element={<Profile />} />
+      </Routes>
+      <Routes>
+        <Route path="/learn-and-practice" element={<LearnAndPractice />} />
       </Routes>
     </BrowserRouter>
   )
