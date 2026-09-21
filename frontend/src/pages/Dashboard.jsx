@@ -1,214 +1,27 @@
+// src/pages/Dashboard.jsx
+
 import { useEffect, useState } from "react";
-import {Activity, ArrowRight, BriefcaseBusiness, CheckCircle2, ChevronRight, CircleUserRound, FileText, GraduationCap, LayoutDashboard, MapPin, Menu, Search, Settings, Sparkles, Target, TrendingUp, UserRound, X, Zap } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import {
+  Activity,
+  ArrowRight,
+  BriefcaseBusiness,
+  CheckCircle2,
+  ChevronRight,
+  CircleUserRound,
+  FileText,
+  MapPin,
+  Settings,
+  Sparkles,
+  Zap,
+  TrendingUp,
+} from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
 import { getDashboardData } from "../api/apiDashboard";
+import AppLayout from "../components/layout/AppLayout";
 
-/* NAVIGATION */
-
-const navItems = [
-  {
-    label: "Dashboard",
-    path: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    label: "My Profile",
-    path: "/profile",
-    icon: UserRound,
-  },
-  {
-    label: "Job Matches",
-    path: "/jobs",
-    icon: BriefcaseBusiness,
-  },
-  {
-    label: "Skill Gaps",
-    path: "/skill-gaps",
-    icon: Target,
-  },
-  {
-    label: "Learn & Practice",
-    path: "/learn",
-    icon: GraduationCap,
-  },
-  {
-    label: "Market & Roadmap",
-    path: "/market",
-    icon: TrendingUp,
-  },
-];
-
-/* SIDEBAR */
-
-function Sidebar({ dashboard, mobileOpen, setMobileOpen }) {
-  return (
-    <>
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-slate-950/40 lg:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
-
-      <aside
-        className={`
-          fixed left-0 top-0 z-50 flex h-screen w-62.5 flex-col
-          border-r border-slate-200 bg-white
-          transition-transform duration-300
-          lg:static lg:z-auto lg:translate-x-0
-          ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
-        `}
-      >
-        {/* Logo */}
-        <div className="flex h-18 items-center justify-between border-b border-slate-200 px-6">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-600 text-white">
-              <TrendingUp size={19} strokeWidth={2.5} />
-            </div>
-
-            <span className="text-[17px] font-semibold tracking-tight text-slate-900">
-              PlaceReady
-            </span>
-          </div>
-
-          <button
-            onClick={() => setMobileOpen(false)}
-            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
-          >
-            <X size={19} />
-          </button>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 px-3 py-5">
-          <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-            Workspace
-          </p>
-
-          <div className="space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-
-              return (
-                <NavLink
-                  key={item.label}
-                  to={item.path}
-                  onClick={() => setMobileOpen(false)}
-                  className={({ isActive }) =>
-                    `
-                    flex items-center gap-3 rounded-lg px-3 py-2.5
-                    text-[13px] font-medium transition
-                    ${
-                      isActive
-                        ? "bg-teal-50 text-teal-700"
-                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                    }
-                    `
-                  }
-                >
-                  <Icon size={17} strokeWidth={1.8} />
-                  <span>{item.label}</span>
-                </NavLink>
-              );
-            })}
-          </div>
-        </nav>
-
-        {/* Readiness */}
-        <div className="border-t border-slate-200 p-5">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-[11px] font-medium text-slate-400">
-              Readiness score
-            </span>
-
-            <span className="text-[11px] font-semibold text-teal-600">
-              +{dashboard.readiness.change}
-            </span>
-          </div>
-
-          <div className="mb-2 flex items-end gap-1">
-            <span className="text-2xl font-semibold text-slate-900">
-              {dashboard.readiness.score}
-            </span>
-
-            <span className="mb-1 text-xs text-slate-400">/100</span>
-          </div>
-
-          <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
-            <div
-              className="h-full rounded-full bg-teal-600"
-              style={{
-                width: `${dashboard.readiness.score}%`,
-              }}
-            />
-          </div>
-
-          <p className="mt-2 text-[11px] leading-4 text-slate-400">
-            Keep improving your skill gaps.
-          </p>
-        </div>
-      </aside>
-    </>
-  );
-}
-
-/* TOPBAR */
-
-function Topbar({ dashboard, setMobileOpen }) {
-  return (
-    <header className="sticky top-0 z-30 flex h-18 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6 lg:px-8">
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => setMobileOpen(true)}
-          className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden"
-        >
-          <Menu size={21} />
-        </button>
-
-        <div className="relative hidden sm:block">
-          <Search
-            size={17}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-          />
-
-          <input
-            type="text"
-            placeholder="Search jobs, skills..."
-            className="h-9 w-55 rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-xs outline-none transition focus:border-teal-500 focus:bg-white"
-          />
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2 sm:gap-4">
-        <button className="relative rounded-lg p-2 text-slate-500 hover:bg-slate-50">
-          <Activity size={19} />
-
-          <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-teal-500" />
-        </button>
-
-        <div className="hidden h-6 w-px bg-slate-200 sm:block" />
-
-        <button className="flex items-center gap-2 rounded-lg p-1.5 hover:bg-slate-50">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-[11px] font-semibold text-white">
-            PD
-          </div>
-
-          <div className="hidden text-left sm:block">
-            <p className="text-xs font-semibold text-slate-800">
-              {dashboard.user.name}
-            </p>
-
-            <p className="text-[10px] text-slate-400">
-              {dashboard.user.role}
-            </p>
-          </div>
-        </button>
-      </div>
-    </header>
-  );
-}
-
-/* READINESS CARD */
+/* -------------------------------------------------------------------------- */
+/* READINESS CARD                                                             */
+/* -------------------------------------------------------------------------- */
 
 function ReadinessCard({ readiness }) {
   const circumference = 301.6;
@@ -229,7 +42,10 @@ function ReadinessCard({ readiness }) {
           </p>
         </div>
 
-        <button className="rounded-lg p-2 text-slate-400 hover:bg-slate-50 hover:text-slate-700">
+        <button
+          type="button"
+          className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
+        >
           <Settings size={16} />
         </button>
       </div>
@@ -292,7 +108,10 @@ function ReadinessCard({ readiness }) {
         </div>
       </div>
 
-      <button className="mt-5 flex w-full items-center justify-center gap-1.5 rounded-lg border border-slate-200 py-2.5 text-xs font-medium text-slate-700 transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-700">
+      <button
+        type="button"
+        className="mt-5 flex w-full items-center justify-center gap-1.5 rounded-lg border border-slate-200 py-2.5 text-xs font-medium text-slate-700 transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-700"
+      >
         Improve readiness
         <ArrowRight size={14} />
       </button>
@@ -300,7 +119,9 @@ function ReadinessCard({ readiness }) {
   );
 }
 
-/* STAT CARD */
+/* -------------------------------------------------------------------------- */
+/* STAT CARD                                                                  */
+/* -------------------------------------------------------------------------- */
 
 function StatCard({
   icon: Icon,
@@ -336,7 +157,9 @@ function StatCard({
   );
 }
 
-/* SKILL GAP CARD */
+/* -------------------------------------------------------------------------- */
+/* SKILL GAP CARD                                                             */
+/* -------------------------------------------------------------------------- */
 
 function SkillGapCard({ skillGaps }) {
   return (
@@ -416,7 +239,9 @@ function SkillGapCard({ skillGaps }) {
   );
 }
 
-/* JOB MATCHES */
+/* -------------------------------------------------------------------------- */
+/* JOB MATCHES                                                                */
+/* -------------------------------------------------------------------------- */
 
 function JobMatchesCard({ matchedJobs }) {
   return (
@@ -493,7 +318,9 @@ function JobMatchesCard({ matchedJobs }) {
   );
 }
 
-/* NEXT STEP */
+/* -------------------------------------------------------------------------- */
+/* NEXT STEP                                                                  */
+/* -------------------------------------------------------------------------- */
 
 function NextStepCard({ nextStep }) {
   return (
@@ -519,7 +346,10 @@ function NextStepCard({ nextStep }) {
           </p>
         </div>
 
-        <button className="flex shrink-0 items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-xs font-semibold text-slate-900 transition hover:bg-slate-100">
+        <button
+          type="button"
+          className="flex shrink-0 items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-xs font-semibold text-slate-900 transition hover:bg-slate-100"
+        >
           {nextStep.action}
           <ArrowRight size={14} />
         </button>
@@ -528,11 +358,13 @@ function NextStepCard({ nextStep }) {
   );
 }
 
-/* LOADING STATE */
+/* -------------------------------------------------------------------------- */
+/* LOADING STATE                                                              */
+/* -------------------------------------------------------------------------- */
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-4 animate-pulse">
+    <div className="animate-pulse space-y-4">
       <div className="h-10 w-64 rounded-lg bg-slate-200" />
 
       <div className="h-4 w-96 max-w-full rounded bg-slate-200" />
@@ -547,16 +379,17 @@ function DashboardSkeleton() {
           <div className="h-33 rounded-2xl bg-slate-200" />
         </div>
       </div>
-
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <div className="h-87.5 rounded-2xl bg-slate-200" />
-        <div className="h-87.5 rounded-2xl bg-slate-200" />
+        <div className="h-8.75 rounded-2xl bg-slate-200" />
+        <div className="h-8.75 rounded-2xl bg-slate-200" />
       </div>
     </div>
   );
 }
 
-/* ERROR STATE */
+/* -------------------------------------------------------------------------- */
+/* ERROR STATE                                                                */
+/* -------------------------------------------------------------------------- */
 
 function DashboardError({ onRetry }) {
   return (
@@ -575,6 +408,7 @@ function DashboardError({ onRetry }) {
         </p>
 
         <button
+          type="button"
           onClick={onRetry}
           className="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white hover:bg-slate-800"
         >
@@ -585,10 +419,12 @@ function DashboardError({ onRetry }) {
   );
 }
 
-/* DASHBOARD */
+/* -------------------------------------------------------------------------- */
+/* DASHBOARD                                                                  */
+/* -------------------------------------------------------------------------- */
 
 export default function Dashboard() {
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const navigate = useNavigate();
 
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -620,141 +456,142 @@ export default function Dashboard() {
 
   if (loading && !dashboard) {
     return (
-      <div className="min-h-screen bg-slate-50">
-        <div className="flex min-h-screen">
-          <div className="hidden w-62.5 border-r border-slate-200 bg-white lg:block" />
-
-          <div className="min-w-0 flex-1">
-            <header className="h-18 border-b border-slate-200 bg-white" />
-
-            <main className="mx-auto w-full max-w-375 px-4 py-8 sm:px-6 lg:px-8">
-              <DashboardSkeleton />
-            </main>
-          </div>
-        </div>
-      </div>
+      <AppLayout
+        user={null}
+        readiness={null}
+        pageTitle="Dashboard"
+        showSearch
+      >
+        <main className="mx-auto w-full max-w-375 min-w-0 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+          <DashboardSkeleton />
+        </main>
+      </AppLayout>
     );
   }
 
-  /* ERROR */
+  /* ------------------------------------------------------------------------ */
+  /* ERROR                                                                     */
+  /* ------------------------------------------------------------------------ */
 
   if (error && !dashboard) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-        <DashboardError onRetry={loadDashboard} />
-      </div>
+      <AppLayout
+        user={null}
+        readiness={null}
+        pageTitle="Dashboard"
+        showSearch
+      >
+        <main className="w-full min-w-0 px-4 sm:px-6 lg:px-8">
+          <DashboardError onRetry={loadDashboard} />
+        </main>
+      </AppLayout>
     );
   }
 
-  /* DASHBOARD */
+  /* ------------------------------------------------------------------------ */
+  /* DASHBOARD                                                                 */
+  /* ------------------------------------------------------------------------ */
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <div className="flex min-h-screen">
-        <Sidebar
-          dashboard={dashboard}
-          mobileOpen={mobileOpen}
-          setMobileOpen={setMobileOpen}
-        />
+    <AppLayout
+      user={dashboard.user}
+      readiness={dashboard.readiness}
+      pageTitle="Dashboard"
+      showSearch
+    >
+      <main className="mx-auto w-full max-w-375 min-w-0 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+        {/* Page heading */}
+        <div className="mb-7">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <div className="min-w-0">
+              <div className="mb-2 flex items-center gap-2">
+                <span className="h-2 w-2 shrink-0 rounded-full bg-teal-500" />
 
-        <div className="min-w-0 flex-1">
-          <Topbar
-            dashboard={dashboard}
-            setMobileOpen={setMobileOpen}
+                <span className="text-[11px] font-medium text-slate-400">
+                  Student dashboard
+                </span>
+              </div>
+
+              <h1 className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
+                Good morning, {dashboard.user.name}
+              </h1>
+
+              <p className="mt-2 text-xs text-slate-500 sm:text-sm">
+                Placement season opens in about 8 weeks. Here's where
+                things stand.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => navigate("/profile")}
+              className="flex w-fit shrink-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+            >
+              <FileText size={15} />
+              View my profile
+            </button>
+          </div>
+        </div>
+
+        {/* Readiness + Stats */}
+        <div className="grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-[minmax(270px,0.8fr)_minmax(0,2fr)]">
+          <ReadinessCard
+            readiness={dashboard.readiness}
           />
 
-          <main className="mx-auto w-full max-w-375 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+          <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
+            <StatCard
+              icon={CircleUserRound}
+              label="Profile completed"
+              value={`${dashboard.stats.profileCompletion}%`}
+              description="Add work experience to push past 80%"
+              accent="bg-blue-50 text-blue-600"
+            />
 
-            {/* Page heading */}
-            <div className="mb-7">
-              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-                <div>
-                  <div className="mb-2 flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-teal-500" />
+            <StatCard
+              icon={BriefcaseBusiness}
+              label="Jobs that match you"
+              value={dashboard.stats.matchedJobs}
+              description="Updated 2 hours ago"
+              accent="bg-teal-50 text-teal-600"
+            />
 
-                    <span className="text-[11px] font-medium text-slate-400">
-                      Student dashboard
-                    </span>
-                  </div>
+            <StatCard
+              icon={CheckCircle2}
+              label="Skills verified"
+              value={`${dashboard.stats.verifiedSkills} / ${dashboard.stats.totalSkills}`}
+              description={`${dashboard.stats.totalSkills - dashboard.stats.verifiedSkills} in-demand skills still missing`}
+              accent="bg-violet-50 text-violet-600"
+            />
 
-                  <h1 className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
-                    Good morning, {dashboard.user.name}
-                  </h1>
-
-                  <p className="mt-2 text-xs text-slate-500 sm:text-sm">
-                    Placement season opens in about 8 weeks. Here's where
-                    things stand.
-                  </p>
-                </div>
-
-                <button className="flex w-fit items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50">
-                  <FileText size={15} />
-                  View my profile
-                </button>
-              </div>
-            </div>
-
-            {/* Readiness + Stats */}
-            <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(270px,0.8fr)_minmax(0,2fr)]">
-              <ReadinessCard
-                readiness={dashboard.readiness}
-              />
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <StatCard
-                  icon={CircleUserRound}
-                  label="Profile completed"
-                  value={`${dashboard.stats.profileCompletion}%`}
-                  description="Add work experience to push past 80%"
-                  accent="bg-blue-50 text-blue-600"
-                />
-
-                <StatCard
-                  icon={BriefcaseBusiness}
-                  label="Jobs that match you"
-                  value={dashboard.stats.matchedJobs}
-                  description="Updated 2 hours ago"
-                  accent="bg-teal-50 text-teal-600"
-                />
-
-                <StatCard
-                  icon={CheckCircle2}
-                  label="Skills verified"
-                  value={`${dashboard.stats.verifiedSkills} / ${dashboard.stats.totalSkills}`}
-                  description={`${dashboard.stats.totalSkills - dashboard.stats.verifiedSkills} in-demand skills still missing`}
-                  accent="bg-violet-50 text-violet-600"
-                />
-
-                <StatCard
-                  icon={Zap}
-                  label="Active applications"
-                  value={dashboard.stats.activeApplications}
-                  description="Your current active applications"
-                  accent="bg-amber-50 text-amber-600"
-                />
-              </div>
-            </div>
-
-            {/* Skill Gaps + Jobs */}
-            <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
-              <SkillGapCard
-                skillGaps={dashboard.skillGaps}
-              />
-
-              <JobMatchesCard
-                matchedJobs={dashboard.matchedJobs}
-              />
-            </div>
-
-            {/* Recommended next step */}
-            <div className="mt-4">
-              <NextStepCard
-                nextStep={dashboard.nextStep}
-              />
-            </div>
-          </main>
+            <StatCard
+              icon={Zap}
+              label="Active applications"
+              value={dashboard.stats.activeApplications}
+              description="Your current active applications"
+              accent="bg-amber-50 text-amber-600"
+            />
+          </div>
         </div>
-      </div>
-    </div>
+
+        {/* Skill Gaps + Jobs */}
+        <div className="mt-4 grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-2">
+          <SkillGapCard
+            skillGaps={dashboard.skillGaps}
+          />
+
+          <JobMatchesCard
+            matchedJobs={dashboard.matchedJobs}
+          />
+        </div>
+
+        {/* Recommended next step */}
+        <div className="mt-4">
+          <NextStepCard
+            nextStep={dashboard.nextStep}
+          />
+        </div>
+      </main>
+    </AppLayout>
   );
 }

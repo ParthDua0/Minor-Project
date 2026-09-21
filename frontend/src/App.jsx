@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import LandingPage from './pages/LandingPage'
 import Dashboard from './pages/Dashboard'
+import Profile from './pages/Profile'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -13,6 +14,9 @@ function App() {
       </Routes>
       <Routes>
         <Route path="/dashboard" element={<Dashboard />} />
+      </Routes>
+      <Routes>
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </BrowserRouter>
   )
