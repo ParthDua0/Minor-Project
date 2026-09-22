@@ -19,7 +19,7 @@ const experienceSchema = new mongoose.Schema({
 const userSchema = new mongoose.Schema({
     fullname: {
         type: String,
-        required: true,
+
         trim: true
     },
 
@@ -38,12 +38,11 @@ const userSchema = new mongoose.Schema({
 
     password: {
         type: String,
-        required: true,
+
         select: false
     },
     confirm_password: {
         type: String,
-        required: true,
         select: false
     },
     phone: {
@@ -55,16 +54,15 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['student', 'recruiter', 'admin'],
         default: 'student',
-        required: true
     },
-    otp: {
-        type: String,
-        select: false
-    },
-    otpExpiry: {
-        type: Date,
-        select: false
-    },  
+   otp: {
+  type: String,
+  select: false,
+},
+otpExpiry: {
+  type: Date,
+  select: false,
+},
     otpVerified: {
         type: Boolean,
         default: false

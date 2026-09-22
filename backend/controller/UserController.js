@@ -35,62 +35,113 @@ const loginUser = async (req, res) => {
 };
 
 const sendOtp = async (req, res) => {
-    const { email } = req.body;
+  const { email } = req.body;
 
-    try {
-        const foundUser = await user.findOne({ email });
+  try {
+    const normalizedEmail = email.toLowerCase().trim();
 
-        if (foundUser) {
-            return res.status(404).json({ message: 'User already exists' });
-        }
+    const foundUser = await user.findOne({
+      email: normalizedEmail,
+    });
 
-        // Generate a 6-digit OTP
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-        // Set OTP and expiry time (e.g., 5 minutes from now)
-        foundUser.otp = otp;
-        foundUser.otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
-       const newUser = new user({
-            email,
-            otp: otp,
-            otpExpiry: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes from now
-        });
-
-        await newUser.save();
-
-        console.log(`OTP for ${email}: ${otp}`);
-
-        res.json({ message: 'OTP sent successfully' });
-    } catch (error) {
-        console.error('Error during sending OTP:', error);
-        res.status(500).json({ message: 'Internal server error' });
+    if (foundUser) {
+      return res.status(409).json({
+        success: false,
+        message: "User already exists",
+      });
     }
+
+    const otp = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
+
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+    const newUser = new user({
+      email: normalizedEmail,
+      otp,
+      otpExpiry,
+      otpVerified: false,
+    });
+
+    await newUser.save();
+
+    // Development only — remove in production
+    console.log(`OTP for ${normalizedEmail}: ${otp}`);
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP generated successfully",
+    });
+
+  } catch (error) {
+    console.error("Error sending OTP:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
 };
 
 const verifyOtp = async (req, res) => {
-    const { email, otp } = req.body;
+  const { email, otp } = req.body;
 
-    try {
-        const foundUser = await user.findOne({ email });
+  try {
+  const foundUser = await user.findOne({
+  email: email.toLowerCase().trim(),
+}).select("+otp +otpExpiry");
+console.log("Found user for OTP verification:", foundUser);
 
-        if (!foundUser) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        // Check if OTP is valid and not expired
-        if (foundUser.otp !== otp || foundUser.otpExpiry < new Date()) {
-            return res.status(400).json({ message: 'Invalid or expired OTP' });
-        }
-
-        // Mark OTP as verified
-        foundUser.otpVerified = true;
-        await foundUser.save();
-
-        res.json({ message: 'OTP verified successfully' });
-    } catch (error) {
-        console.error('Error during OTP verification:', error);
-        res.status(500).json({ message: 'Internal server error' });
+    if (!foundUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
+
+    if (
+      !foundUser.otp ||
+      foundUser.otp !== String(otp)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      });
+    }
+
+    if (
+      !foundUser.otpExpiry ||
+      new Date() > new Date(foundUser.otpExpiry)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP has expired",
+      });
+    }
+
+    foundUser.otpVerified = true;
+    foundUser.verified = true;
+
+    // Clear OTP after successful verification
+    foundUser.otp = undefined;
+    foundUser.otpExpiry = undefined;
+
+    await foundUser.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP verified successfully",
+    });
+
+  } catch (error) {
+    console.error("OTP verification error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
 };
 
 const registerUser = async (req, res) => {
