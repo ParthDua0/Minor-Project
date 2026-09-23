@@ -41,15 +41,6 @@ const userSchema = new mongoose.Schema({
 
         select: false
     },
-    confirm_password: {
-        type: String,
-        select: false
-    },
-    phone: {
-        type: String,
-        trim: true
-    },
-
     role: {
         type: String,
         enum: ['student', 'recruiter', 'admin'],
@@ -61,7 +52,7 @@ const userSchema = new mongoose.Schema({
 },
 otpExpiry: {
   type: Date,
-  select: false,
+  select: false, 
 },
     otpVerified: {
         type: Boolean,
@@ -112,5 +103,13 @@ otpExpiry: {
 }, {
     timestamps: true
 });
+
+userSchema.index(
+    { createdAt: 1 },
+    {
+        expireAfterSeconds: 30 * 60,
+        partialFilterExpression: { verifiyed: false }
+    }
+);
 
 module.exports = mongoose.model('User', userSchema);

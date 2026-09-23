@@ -15,6 +15,7 @@ const connectDB = async () => {
             console.error('MongoDB connection failed Because:', error.message);
 
             await new Promise(resolve => setTimeout(resolve, 5000));
+            return false;
         }
 };
 
