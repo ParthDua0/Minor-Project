@@ -12,9 +12,9 @@ import {
 
 import {
   loginUser,
-  sendEmailOtp,
-  verifyEmailOtp,
-  signupUser,
+  registerUser,
+  sendOtp,
+  verifyOtp,
 } from "../api/apiAuth";
 
 function LandingPage() {
@@ -288,7 +288,6 @@ function LandingPage() {
       const data = await loginUser({
         email: loginForm.email.trim().toLowerCase(),
         password: loginForm.password,
-        role,
       });
 
       /*
@@ -312,13 +311,6 @@ function LandingPage() {
         localStorage.setItem("placeReadyToken", data.token);
       }
 
-      if (data?.user) {
-        localStorage.setItem(
-          "placeReadyUser",
-          JSON.stringify(data.user)
-        );
-      }
-
       // Example:
       // navigate("/dashboard");
 
@@ -338,89 +330,89 @@ function LandingPage() {
   ========================================================= */
 
   const handleSendEmailOtp = async () => {
-    setSignupApiError("");
+  setSignupApiError("");
 
-    const errors = {};
+  const errors = {};
 
-    if (!signupForm.email.trim()) {
-      errors.email = "Email is required.";
-    } else if (!isValidEmail(signupForm.email)) {
-      errors.email = "Enter a valid email address.";
-    }
+  if (!signupForm.email.trim()) {
+    errors.email = "Email is required.";
+  } else if (!isValidEmail(signupForm.email)) {
+    errors.email = "Enter a valid email address.";
+  }
 
-    if (Object.keys(errors).length > 0) {
-      setSignupErrors(errors);
-      return;
-    }
+  if (Object.keys(errors).length > 0) {
+    setSignupErrors(errors);
+    return;
+  }
 
-    try {
-      setOtpLoading(true);
+  try {
+    setOtpLoading(true);
 
-      await sendEmailOtp(
-        signupForm.email.trim().toLowerCase()
-      );
+    await sendOtp(
+      signupForm.email.trim().toLowerCase()
+    );
 
-      setEmailOtpSent(true);
-      setEmailOtpVerified(false);
+    setEmailOtpSent(true);
+    setEmailOtpVerified(false);
 
-      setSignupForm((prev) => ({
-        ...prev,
-        otp: "",
-      }));
-    } catch (error) {
-      setSignupApiError(
-        error?.response?.data?.message ||
-          "Unable to send OTP. Please try again."
-      );
-    } finally {
-      setOtpLoading(false);
-    }
-  };
+    setSignupForm((prev) => ({
+      ...prev,
+      otp: "",
+    }));
+  } catch (error) {
+    setSignupApiError(
+      error?.response?.data?.message ||
+        "Unable to send OTP. Please try again."
+    );
+  } finally {
+    setOtpLoading(false);
+  }
+};
 
   /* =========================================================
      VERIFY EMAIL OTP
   ========================================================= */
 
   const handleVerifyEmailOtp = async () => {
-    setSignupApiError("");
+  setSignupApiError("");
 
-    if (!/^\d{6}$/.test(signupForm.otp)) {
-      setSignupErrors((prev) => ({
-        ...prev,
-        otp: "Enter the 6-digit OTP.",
-      }));
+  if (!/^\d{6}$/.test(signupForm.otp)) {
+    setSignupErrors((prev) => ({
+      ...prev,
+      otp: "Enter the 6-digit OTP.",
+    }));
 
-      return;
-    }
+    return;
+  }
 
-    try {
-      setOtpVerifyLoading(true);
+  try {
+    setOtpVerifyLoading(true);
 
-      await verifyEmailOtp(
-        signupForm.email.trim().toLowerCase(),
-        signupForm.otp
-      );
+    await verifyOtp(
+      signupForm.email.trim().toLowerCase(),
+      signupForm.otp
+    );
 
-      setEmailOtpVerified(true);
+    setEmailOtpVerified(true);
 
-      setSignupErrors((prev) => ({
-        ...prev,
-        otp: "",
-        email: "",
-      }));
-    } catch (error) {
-      setEmailOtpVerified(false);
+    setSignupErrors((prev) => ({
+      ...prev,
+      otp: "",
+      email: "",
+    }));
+  } catch (error) {
+    setEmailOtpVerified(false);
 
-      setSignupErrors((prev) => ({
-        ...prev,
-        otp:
-          error?.response?.data?.message ||
-          "Invalid or expired OTP.",
-      }));
-    } finally {
-      setOtpVerifyLoading(false);
-    }
-  };
+    setSignupErrors((prev) => ({
+      ...prev,
+      otp:
+        error?.response?.data?.message ||
+        "Invalid or expired OTP.",
+    }));
+  } finally {
+    setOtpVerifyLoading(false);
+  }
+};
 
   /* =========================================================
      SIGNUP
@@ -439,32 +431,17 @@ function LandingPage() {
       setSignupLoading(true);
 
       const payload = {
-        role,
-        fullName: signupForm.fullName.trim(),
+        fullname: signupForm.fullName.trim(),
         email: signupForm.email.trim().toLowerCase(),
-
-        ...(role === "student"
-          ? {
-              university: signupForm.university.trim(),
-              graduationYear: Number(
-                signupForm.graduationYear
-              ),
-            }
-          : {
-              company: signupForm.company.trim(),
-              designation: signupForm.designation.trim(),
-            }),
-
-        ...(signupForm.phone
-          ? {
-              phone: `+91${signupForm.phone}`,
-            }
-          : {}),
-
         password: signupForm.password,
+        confirm_password: signupForm.confirmPassword,
+        phone: signupForm.phone ? `+91${signupForm.phone}` : "",
+        role,
+        graduationYear:
+          role === "student" ? Number(signupForm.graduationYear) : undefined,
       };
 
-      const data = await signupUser(payload);
+      const data = await registerUser(payload);
 
       /*
         Backend should return something like:
@@ -478,17 +455,6 @@ function LandingPage() {
       */
 
       console.log("Signup successful:", data);
-
-      if (data?.token) {
-        localStorage.setItem("placeReadyToken", data.token);
-      }
-
-      if (data?.user) {
-        localStorage.setItem(
-          "placeReadyUser",
-          JSON.stringify(data.user)
-        );
-      }
 
       // Example:
       // navigate("/dashboard");

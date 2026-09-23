@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "/api/users";
 
 const authApi = axios.create({
   baseURL: API_BASE_URL,
@@ -9,29 +10,28 @@ const authApi = axios.create({
   },
 });
 
-// Login
-export async function loginUser({ email, password, role }) {
-  const response = await authApi.post("/api/auth/login", {
+// LOGIN
+export async function loginUser({ email, password }) {
+  const response = await authApi.post("/login", {
     email,
     password,
-    role,
   });
 
   return response.data;
 }
 
-// Send email OTP
-export async function sendEmailOtp(email) {
-  const response = await authApi.post("/api/auth/send-email-otp", {
+// SEND OTP
+export async function sendOtp(email) {
+  const response = await authApi.post("/send-otp", {
     email,
   });
 
   return response.data;
 }
 
-// Verify email OTP
-export async function verifyEmailOtp(email, otp) {
-  const response = await authApi.post("/api/auth/verify-email-otp", {
+// VERIFY OTP
+export async function verifyOtp(email, otp) {
+  const response = await authApi.post("/verify-otp", {
     email,
     otp,
   });
@@ -39,9 +39,25 @@ export async function verifyEmailOtp(email, otp) {
   return response.data;
 }
 
-// Signup
-export async function signupUser(formData) {
-  const response = await authApi.post("/api/auth/signup", formData);
+// REGISTER
+export async function registerUser({
+  fullname,
+  email,
+  password,
+  confirm_password,
+  phone,
+  role,
+  graduationYear,
+}) {
+  const response = await authApi.post("/register", {
+    fullname,
+    email,
+    password,
+    confirm_password,
+    phone,
+    role,
+    graduationYear,
+  });
 
   return response.data;
 }
