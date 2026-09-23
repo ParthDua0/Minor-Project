@@ -3,15 +3,24 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const sendEmail = require('../helper/sendEmail');
 
+const normalizeEmail = (email) => {
+    if (!email || typeof email !== 'string' || !email.trim()) {
+        return null;
+    }
+
+    return email.toLowerCase().trim();
+};
 
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        if (!email || !password) {
+        const normalizedEmail = normalizeEmail(email);
+
+        if (!normalizedEmail || !password) {
             return res.status(400).json({ message: 'Email and password are required' });
         }
-        const foundUser = await user.findOne({ email: email.toLowerCase().trim() }).select('+password')
+        const foundUser = await user.findOne({ email: normalizedEmail }).select('+password')
 
         if (!foundUser) {
             return res.status(401).json({ message: 'User not found' });
@@ -42,13 +51,18 @@ const sendOtp = async (req, res) => {
   const { email } = req.body;
 
   try {
-    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedEmail = normalizeEmail(email);
 
-    const foundUser = await user.findOne({
-      email: normalizedEmail,
-    });
+    if (!normalizedEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+    }
 
-    if (foundUser) { 
+    const foundUser = await user.findOne({ email: normalizedEmail });
+
+    if (foundUser && foundUser.otpVerified) { 
       return res.status(409).json({
         success: false,
         message: "User already exists",
@@ -61,26 +75,33 @@ const sendOtp = async (req, res) => {
 
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
-    const newUser = new user({
-      email: normalizedEmail,
-      otp,
-      otpExpiry,
-      otpVerified: false,
-    });
+    if (foundUser) {
+      foundUser.otp = otp;
+      foundUser.otpExpiry = otpExpiry;
+      foundUser.otpVerified = false;
+      await foundUser.save();
+    } else {
+      const newUser = new user({
+        email: normalizedEmail,
+        otp,
+        otpExpiry,
+        otpVerified: false,
+      });
 
-    await newUser.save();
+      await newUser.save();
+    }
 
     // Development only — remove in production
     console.log(`OTP for ${normalizedEmail}: ${otp}`);
 
 
-    sendVerificationCode(otp, normalizedEmail, res);
+    await sendVerificationCode(otp, normalizedEmail, res);
 
 
     async function sendVerificationCode(otp, email, res) {
   try {
       const message = generateEmailTemplate(otp)
-      sendEmail({ email, subject: "Your Verification Code", message })
+      await sendEmail({ email, subject: "Your Verification Code", message })
       res.status(200).json({
         success: true,
         message: "verification code send successfully to your email",
@@ -300,8 +321,17 @@ const verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
 
   try {
+  const normalizedEmail = normalizeEmail(email);
+
+    if (!normalizedEmail || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and OTP are required",
+      });
+    }
+
   const foundUser = await user.findOne({
-  email: email.toLowerCase().trim(),
+  email: normalizedEmail,
 }).select("+otp +otpExpiry");
 
     if (!foundUser) {
@@ -358,7 +388,13 @@ const registerUser = async (req, res) => {
     const { fullname, email, password, confirm_password, phone, role ,graduationYear } = req.body;
 
     try {
-        const foundUser = await user.findOne({ email: email.toLowerCase().trim() });
+        const normalizedEmail = normalizeEmail(email);
+
+        if (!normalizedEmail) {
+            return res.status(400).json({ message: 'Email is required' });
+        }
+
+        const foundUser = await user.findOne({ email: normalizedEmail });
 
         if (!foundUser) {
             return res.status(404).json({ message: 'User not found' });

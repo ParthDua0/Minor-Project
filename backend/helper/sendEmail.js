@@ -3,6 +3,10 @@ const dotenv=require('dotenv')
 dotenv.config()
 
 module.exports = async({email , subject , message}) =>{
+    if (!email || typeof email !== 'string' || !email.trim()) {
+        throw new Error('Email recipient is required')
+    }
+
     const transport = nodeMailer.createTransport({
         host:process.env.SMTP_HOST,
         service:process.env.SMTP_SERVICE,
@@ -15,7 +19,7 @@ module.exports = async({email , subject , message}) =>{
 
     const option ={
         from:process.env.SMTP_MAIL,
-        to:email,
+        to:email.trim(),
         subject,
         html:message
     }
