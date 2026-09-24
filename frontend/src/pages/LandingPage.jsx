@@ -552,7 +552,7 @@ function LandingPage() {
 
             <div className="mt-10 pt-7 border-t border-slate-200 text-center">
               <p className="text-sm text-slate-500">
-                Are you a recruiter?
+                Are you ready?
               </p>
 
               <button
@@ -563,7 +563,7 @@ function LandingPage() {
                 }}
                 className="mt-1 text-sm text-teal-600 font-medium hover:text-teal-700"
               >
-                Access recruiter portal
+                Get Started
               </button>
             </div>
           </div>
