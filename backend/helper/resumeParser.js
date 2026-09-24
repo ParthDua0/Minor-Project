@@ -10,7 +10,7 @@ const KNOWN_SKILLS = [
 ];
 
 const normalizeText = (text) => text.replace(/\r/g, '\n').replace(/[ \t]+/g, ' ').trim();
-
+ 
 const requireOptional = (packageName) => {
     try {
         return require(packageName);

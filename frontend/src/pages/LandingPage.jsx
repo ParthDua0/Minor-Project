@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Check,
   X,
@@ -18,6 +19,7 @@ import {
 } from "../api/apiAuth";
 
 function LandingPage() {
+  const navigate = useNavigate();
   const [drawer, setDrawer] = useState(null);
   const [role, setRole] = useState("student");
 
@@ -290,35 +292,21 @@ function LandingPage() {
         password: loginForm.password,
       });
 
-      /*
-        Backend should return something like:
-
-        {
-          success: true,
-          message: "Login successful",
-          token: "...",
-          user: {...}
-        }
-      */
-
       console.log("Login successful:", data);
 
-      // TEMPORARY:
-      // Replace this with your actual auth context/navigation
-      // after the backend contract is finalized.
-
-      if (data?.token) {
-        localStorage.setItem("placeReadyToken", data.token);
-      }
-
-      // Example:
-      // navigate("/dashboard");
+      // Store JWT
+      localStorage.setItem("placeReadyToken", data.token);
 
       closeDrawer();
+
+      // Go to dashboard
+      navigate("/dashboard");
     } catch (error) {
+      console.error("Login failed:", error);
+
       setLoginApiError(
         error?.response?.data?.message ||
-          "Unable to log in. Please check your credentials."
+          "Unable to log in. Please check your credentials.",
       );
     } finally {
       setLoginLoading(false);
@@ -330,44 +318,42 @@ function LandingPage() {
   ========================================================= */
 
   const handleSendEmailOtp = async () => {
-  setSignupApiError("");
+    setSignupApiError("");
 
-  const errors = {};
+    const errors = {};
 
-  if (!signupForm.email.trim()) {
-    errors.email = "Email is required.";
-  } else if (!isValidEmail(signupForm.email)) {
-    errors.email = "Enter a valid email address.";
-  }
+    if (!signupForm.email.trim()) {
+      errors.email = "Email is required.";
+    } else if (!isValidEmail(signupForm.email)) {
+      errors.email = "Enter a valid email address.";
+    }
 
-  if (Object.keys(errors).length > 0) {
-    setSignupErrors(errors);
-    return;
-  }
+    if (Object.keys(errors).length > 0) {
+      setSignupErrors(errors);
+      return;
+    }
 
-  try {
-    setOtpLoading(true);
+    try {
+      setOtpLoading(true);
 
-    await sendOtp(
-      signupForm.email.trim().toLowerCase()
-    );
+      await sendOtp(signupForm.email.trim().toLowerCase());
 
-    setEmailOtpSent(true);
-    setEmailOtpVerified(false);
+      setEmailOtpSent(true);
+      setEmailOtpVerified(false);
 
-    setSignupForm((prev) => ({
-      ...prev,
-      otp: "",
-    }));
-  } catch (error) {
-    setSignupApiError(
-      error?.response?.data?.message ||
-        "Unable to send OTP. Please try again."
-    );
-  } finally {
-    setOtpLoading(false);
-  }
-};
+      setSignupForm((prev) => ({
+        ...prev,
+        otp: "",
+      }));
+    } catch (error) {
+      setSignupApiError(
+        error?.response?.data?.message ||
+          "Unable to send OTP. Please try again.",
+      );
+    } finally {
+      setOtpLoading(false);
+    }
+  };
 
   /* =========================================================
      VERIFY EMAIL OTP
