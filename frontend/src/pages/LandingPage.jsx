@@ -300,7 +300,7 @@ function LandingPage() {
       closeDrawer();
 
       // Go to dashboard
-      navigate("/dashboard");
+      navigate("/introduction");
     } catch (error) {
       console.error("Login failed:", error);
 

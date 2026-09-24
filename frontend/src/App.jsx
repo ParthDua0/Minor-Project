@@ -3,6 +3,7 @@ import LandingPage from './pages/LandingPage'
 import Dashboard from './pages/Dashboard'
 import Profile from './pages/Profile'
 import LearnAndPractice from './pages/LearnAndPractice'
+import Introduction from './pages/Introduction'
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/learn-and-practice" element={<LearnAndPractice />} />
+        <Route path="/introduction" element={<Introduction />} />
       </Routes>
     </BrowserRouter>
   )
