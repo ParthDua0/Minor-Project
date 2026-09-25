@@ -423,31 +423,177 @@ const registerUser = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-    const { userId } = tokenData = req.user; // Assuming you have middleware that sets req.user with the decoded JWT data
-    const { fullname, email, phone, role, graduationYear } = req.body;
+    const { userId } = req.user; // Set by auth middleware
+
+    const {
+        fullname,
+        email,
+        profile = {},
+        phone,
+        graduationYear,
+        education,
+        experience,
+        parsedSkills,
+        linkedin,
+        github,
+        portfolio
+    } = req.body;
+
+    const {
+        branch,
+        cgpa,
+        currentYear,
+        targetRoles,
+        employmentType,
+        workPreference,
+        customGoal
+    } = profile;
 
     try {
         const foundUser = await user.findById(userId);
 
         if (!foundUser) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({
+                message: "User not found"
+            });
         }
 
-        // Update user fields
-        foundUser.fullname = fullname || foundUser.fullname;
-        foundUser.email = email || foundUser.email;
-        foundUser.phone = phone || foundUser.phone;
-        foundUser.role = role || foundUser.role;
-        foundUser.graduationYear = graduationYear || foundUser.graduationYear;
+        // Basic user information
+        if (fullname !== undefined) {
+            foundUser.fullname = fullname;
+        }
 
+        if (email !== undefined) {
+            foundUser.email = email;
+        }
+
+        if (phone !== undefined) {
+            foundUser.phone = phone;
+        }
+
+        if (graduationYear !== undefined) {
+            foundUser.graduationYear = graduationYear;
+        }
+
+        // Make sure profile exists
+        if (!foundUser.profile) {
+            foundUser.profile = {};
+        }
+
+        // Education
+        if (Array.isArray(education)) {
+            foundUser.profile.education = education;
+        }
+
+        // Experience
+        if (Array.isArray(experience)) {
+            foundUser.profile.experience = experience;
+        }
+
+        // Skills
+        if (Array.isArray(parsedSkills)) {
+            foundUser.profile.parsedSkills = parsedSkills
+                .filter(skill => typeof skill === "string")
+                .map(skill => skill.trim().toLowerCase());
+        }
+
+        // Target roles
+        if (Array.isArray(targetRoles)) {
+            foundUser.profile.targetRoles = targetRoles;
+        }
+
+        // Other profile fields
+        if (branch !== undefined) {
+            foundUser.profile.branch = branch;
+        }
+
+        if (cgpa !== undefined) {
+            foundUser.profile.cgpa = cgpa;
+        }
+
+        if (currentYear !== undefined) {
+            foundUser.profile.currentYear = currentYear;
+        }
+
+        if (employmentType !== undefined) {
+            foundUser.profile.employmentType = employmentType;
+        }
+
+        if (Array.isArray(workPreference)) {
+            foundUser.profile.workPreference = workPreference;
+        }
+
+        if (customGoal !== undefined) {
+            foundUser.profile.customGoal = customGoal;
+        }
+
+        // Social / portfolio links
+        if (linkedin !== undefined) {
+            foundUser.profile.linkedin = linkedin;
+        }
+
+        if (github !== undefined) {
+            foundUser.profile.github = github;
+        }
+
+        if (portfolio !== undefined) {
+            foundUser.profile.portfolio = portfolio;
+        }
+
+        // Save changes
         await foundUser.save();
 
-        res.status(200).json({ 
-            message: 'User updated successfully', user: foundUser
-         });
+        return res.status(200).json({
+            message: "Profile updated successfully",
+            user: foundUser
+        });
+
     } catch (error) {
-        console.error('Error during user update:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        console.error("Error updating profile:", error);
+
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+};
+
+
+
+const addResume = async (req, res) => {
+    const { userId } = req.user;
+    const { resumeFileUrl, resumePublicId, resumeText } = req.body;
+ 
+    if (!resumeFileUrl) {
+        return res.status(400).json({ message: 'resumeFileUrl is required' });
+    }
+ 
+    try {
+        const foundUser = await User.findById(userId);
+ 
+        if (!foundUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+ 
+        if (!foundUser.profile) {
+            foundUser.profile = {};
+        }
+ 
+        foundUser.profile.resumeFileUrl = resumeFileUrl;
+        if (resumePublicId !== undefined) foundUser.profile.resumePublicId = resumePublicId;
+        if (resumeText !== undefined) foundUser.profile.resumeText = resumeText;
+ 
+        await foundUser.save();
+ 
+        return res.status(201).json({
+            message: 'Resume added successfully',
+            resume: {
+                resumeFileUrl: foundUser.profile.resumeFileUrl,
+                resumePublicId: foundUser.profile.resumePublicId
+            }
+        });
+    } catch (error) {
+        console.error('Error adding resume:', error);
+        return res.status(500).json({ message: 'Internal server error' });
     }
 };
 
@@ -518,5 +664,7 @@ module.exports = {
     updateUser,
     deleteUser,
     logoutUser,
+    updateUser,
+    addResume,
     userinfo
 };
