@@ -61,3 +61,16 @@ export async function registerUser({
 
   return response.data;
 }
+
+// GET USER INFO
+export async function getUserInfo() {
+  const token = localStorage.getItem("placeReadyToken");
+
+  const response = await authApi.get("/user-info", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data;
+}

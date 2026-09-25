@@ -24,6 +24,8 @@ export default function IntroStep3({
   updateProfile,
   onBack,
   onComplete,
+  saving,
+  saveError,
 }) {
   const toggleRole = (role) => {
     const exists = data.targetRoles.includes(role);
@@ -48,6 +50,10 @@ export default function IntroStep3({
         : [...data.workPreference, option],
     });
   };
+
+  const hasGoal =
+    data.targetRoles.length > 0 ||
+    data.customGoal.trim().length > 0;
 
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-7 shadow-sm sm:p-8">
@@ -74,11 +80,12 @@ export default function IntroStep3({
                 key={role}
                 type="button"
                 onClick={() => toggleRole(role)}
+                disabled={saving}
                 className={`rounded-full border px-3 py-1.5 text-xs transition ${
                   selected
                     ? "border-teal-600 bg-teal-50 text-teal-700"
                     : "border-slate-200 bg-white text-slate-600 hover:border-teal-300 hover:text-teal-700"
-                }`}
+                } disabled:cursor-not-allowed disabled:opacity-60`}
               >
                 {role}
               </button>
@@ -101,8 +108,9 @@ export default function IntroStep3({
               customGoal: e.target.value,
             })
           }
+          disabled={saving}
           placeholder="Enter another target role..."
-          className="mt-2 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/10"
+          className="mt-2 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/10 disabled:cursor-not-allowed disabled:bg-slate-50"
         />
       </div>
 
@@ -126,11 +134,12 @@ export default function IntroStep3({
                   employmentType: value,
                 })
               }
+              disabled={saving}
               className={`rounded-lg border px-4 py-2 text-xs font-medium transition ${
                 data.employmentType === value
                   ? "border-teal-600 bg-teal-50 text-teal-700"
                   : "border-slate-200 text-slate-600 hover:border-teal-300"
-              }`}
+              } disabled:cursor-not-allowed disabled:opacity-60`}
             >
               {label}
             </button>
@@ -156,11 +165,12 @@ export default function IntroStep3({
                 onClick={() =>
                   toggleWorkPreference(option)
                 }
+                disabled={saving}
                 className={`rounded-lg border px-4 py-2 text-xs font-medium transition ${
                   selected
                     ? "border-teal-600 bg-teal-50 text-teal-700"
                     : "border-slate-200 text-slate-600 hover:border-teal-300"
-                }`}
+                } disabled:cursor-not-allowed disabled:opacity-60`}
               >
                 {option}
               </button>
@@ -169,12 +179,20 @@ export default function IntroStep3({
         </div>
       </div>
 
+      {/* Save error */}
+      {saveError && (
+        <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+          {saveError}
+        </div>
+      )}
+
       {/* Actions */}
       <div className="mt-9 flex items-center justify-between">
         <button
           type="button"
           onClick={onBack}
-          className="h-10 rounded-lg bg-slate-100 px-5 text-sm font-medium text-slate-700 hover:bg-slate-200"
+          disabled={saving}
+          className="h-10 rounded-lg bg-slate-100 px-5 text-sm font-medium text-slate-700 hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
         >
           Back
         </button>
@@ -182,13 +200,10 @@ export default function IntroStep3({
         <button
           type="button"
           onClick={onComplete}
-          disabled={
-            data.targetRoles.length === 0 &&
-            !data.customGoal.trim()
-          }
+          disabled={!hasGoal || saving}
           className="h-10 rounded-lg bg-teal-600 px-6 text-sm font-medium text-white hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
         >
-          Complete profile
+          {saving ? "Saving..." : "Complete profile"}
         </button>
       </div>
     </section>

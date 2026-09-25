@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { TrendingUp } from "lucide-react";
 import IntroStep1 from "../components/introduction/IntroStep1";
 import IntroStep2 from "../components/introduction/IntroStep2";
 import IntroStep3 from "../components/introduction/IntroStep3";
+import { saveIntroduction } from "../api/apiIntroduction";
 
 const steps = [
   "About you",
@@ -11,6 +13,8 @@ const steps = [
 ];
 
 export default function Introduction() {
+  const navigate = useNavigate();
+
   const [step, setStep] = useState(1);
 
   const [profileData, setProfileData] = useState({
@@ -29,6 +33,9 @@ export default function Introduction() {
     workPreference: [],
   });
 
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
   const updateProfile = (updates) => {
     setProfileData((prev) => ({
       ...prev,
@@ -36,15 +43,63 @@ export default function Introduction() {
     }));
   };
 
-  const handleComplete = () => {
-    console.log("Introduction completed:", profileData);
+  const handleComplete = async () => {
+    try {
+      setSaving(true);
+      setSaveError("");
 
-    // Backend integration will go here later.
-    // Example:
-    // await completeProfile(profileData);
+      const extracted = profileData.extractedData || {};
 
-    // Later:
-    // navigate("/dashboard");
+      const payload = {
+        fullname: extracted.fullname || "",
+        email: extracted.email || "",
+        phone: extracted.phone || "",
+
+        role: "student",
+
+        graduationYear: profileData.graduationYear
+          ? Number(profileData.graduationYear)
+          : undefined,
+
+        profile: {
+          branch: profileData.branch || "",
+
+          cgpa: profileData.cgpa
+            ? Number(profileData.cgpa)
+            : undefined,
+
+          currentYear: profileData.currentYear
+            ? Number(profileData.currentYear)
+            : undefined,
+
+          targetRoles: profileData.targetRoles || [],
+        },
+
+        employmentType: profileData.employmentType || "both",
+
+        workPreference: profileData.workPreference || [],
+
+        customGoal: profileData.customGoal?.trim() || "",
+      };
+
+      console.log("Saving onboarding data:", payload);
+
+      const response = await saveIntroduction(payload);
+
+      console.log("Profile saved successfully:", response);
+
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Failed to save profile:", error);
+
+      setSaveError(
+        error?.response?.data?.message ||
+          error?.response?.data?.error ||
+          "Unable to save your profile. Please try again."
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -56,8 +111,11 @@ export default function Introduction() {
             {/* Logo */}
             <div className="flex items-center gap-2.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-600">
-                <TrendingUp size={17} strokeWidth={2.2} className="text-white" >
-                </TrendingUp>
+                <TrendingUp
+                  size={17}
+                  strokeWidth={2.2}
+                  className="text-white"
+                />
               </div>
 
               <span className="text-sm font-semibold text-slate-950">
@@ -66,7 +124,7 @@ export default function Introduction() {
             </div>
 
             {/* Step labels */}
-            <div className="hidden sm:flex items-center gap-2 text-xs">
+            <div className="hidden items-center gap-2 text-xs sm:flex">
               {steps.map((label, index) => {
                 const stepNumber = index + 1;
                 const active = stepNumber === step;
@@ -137,6 +195,8 @@ export default function Introduction() {
             updateProfile={updateProfile}
             onBack={() => setStep(2)}
             onComplete={handleComplete}
+            saving={saving}
+            saveError={saveError}
           />
         )}
 

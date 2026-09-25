@@ -9,7 +9,6 @@ const introductionApi = axios.create({
 
 export async function uploadResume(file) {
   const formData = new FormData();
-
   formData.append("resume", file);
 
   const token = localStorage.getItem("placeReadyToken");
@@ -19,6 +18,23 @@ export async function uploadResume(file) {
       Authorization: `Bearer ${token}`,
     },
   });
+
+  return response.data;
+}
+
+export async function saveIntroduction(data) {
+  const token = localStorage.getItem("placeReadyToken");
+
+  const response = await introductionApi.post(
+    "/user-edit",
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
 
   return response.data;
 }

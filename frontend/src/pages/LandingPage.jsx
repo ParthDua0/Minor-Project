@@ -16,6 +16,7 @@ import {
   registerUser,
   sendOtp,
   verifyOtp,
+  getUserInfo,
 } from "../api/apiAuth";
 
 function LandingPage() {
@@ -297,10 +298,31 @@ function LandingPage() {
       // Store JWT
       localStorage.setItem("placeReadyToken", data.token);
 
+      // Get existing user/profile data
+      const userData = await getUserInfo();
+
+      console.log("User info:", userData);
+
+      const user = userData?.user;
+      const profile = user?.profile;
+
+      // Check whether onboarding has already been completed
+      const onboardingComplete =
+        Boolean(profile?.branch) &&
+        Boolean(user?.graduationYear) &&
+        Boolean(profile?.currentYear) &&
+        Boolean(profile?.resumeFileUrl) &&
+        ((Array.isArray(profile?.targetRoles) &&
+          profile.targetRoles.length > 0) ||
+          Boolean(user?.customGoal?.trim()));
+
       closeDrawer();
 
-      // Go to dashboard
-      navigate("/introduction");
+      if (onboardingComplete) {
+        navigate("/dashboard");
+      } else {
+        navigate("/introduction");
+      }
     } catch (error) {
       console.error("Login failed:", error);
 
