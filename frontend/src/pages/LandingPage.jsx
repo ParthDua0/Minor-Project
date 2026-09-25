@@ -314,7 +314,7 @@ function LandingPage() {
         Boolean(profile?.resumeFileUrl) &&
         ((Array.isArray(profile?.targetRoles) &&
           profile.targetRoles.length > 0) ||
-          Boolean(user?.customGoal?.trim()));
+          Boolean(profile?.customGoal?.trim()));
 
       closeDrawer();
 
@@ -468,6 +468,7 @@ function LandingPage() {
       // navigate("/dashboard");
 
       closeDrawer();
+      setDrawer("login");
     } catch (error) {
       setSignupApiError(
         error?.response?.data?.message ||

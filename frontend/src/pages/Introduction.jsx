@@ -64,22 +64,29 @@ export default function Introduction() {
         profile: {
           branch: profileData.branch || "",
 
-          cgpa: profileData.cgpa
-            ? Number(profileData.cgpa)
-            : undefined,
+          cgpa: profileData.cgpa ? Number(profileData.cgpa) : undefined,
 
           currentYear: profileData.currentYear
             ? Number(profileData.currentYear)
             : undefined,
 
           targetRoles: profileData.targetRoles || [],
+
+          employmentType: profileData.employmentType || "both",
+
+          workPreference: profileData.workPreference || [],
+
+          customGoal: profileData.customGoal?.trim() || "",
         },
 
-        employmentType: profileData.employmentType || "both",
+        // Data extracted from resume
+        education: extracted.education || [],
+        experience: extracted.experience || [],
+        parsedSkills: extracted.parsedSkills || [],
 
-        workPreference: profileData.workPreference || [],
-
-        customGoal: profileData.customGoal?.trim() || "",
+        linkedin: extracted.linkedin || "",
+        github: extracted.github || "",
+        portfolio: extracted.portfolio || "",
       };
 
       console.log("Saving onboarding data:", payload);
@@ -95,7 +102,7 @@ export default function Introduction() {
       setSaveError(
         error?.response?.data?.message ||
           error?.response?.data?.error ||
-          "Unable to save your profile. Please try again."
+          "Unable to save your profile. Please try again.",
       );
     } finally {
       setSaving(false);
