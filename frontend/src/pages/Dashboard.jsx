@@ -1,5 +1,3 @@
-// src/pages/Dashboard.jsx
-
 import { useEffect, useState } from "react";
 import {
   Activity,
@@ -12,7 +10,6 @@ import {
   MapPin,
   Settings,
   Sparkles,
-  Zap,
   TrendingUp,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -24,6 +21,52 @@ import AppLayout from "../components/layout/AppLayout";
 /* -------------------------------------------------------------------------- */
 
 function ReadinessCard({ readiness }) {
+  if (!readiness) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-slate-500">
+              Your readiness score
+            </p>
+
+            <p className="mt-1 text-[11px] text-slate-400">
+              Calculated from your profile and skills
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="rounded-lg p-2 text-slate-300"
+          >
+            <Settings size={16} />
+          </button>
+        </div>
+
+        <div className="mt-5 flex items-center gap-5">
+          <div className="relative h-28 w-28 shrink-0">
+            <div className="flex h-full w-full items-center justify-center rounded-full border-8 border-slate-100">
+              <span className="text-2xl font-semibold text-slate-400">
+                —
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-medium text-slate-500">
+              Not calculated
+            </span>
+
+            <p className="mt-3 max-w-40 text-[11px] leading-4 text-slate-400">
+              Your readiness score will appear once the assessment
+              service is connected.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const circumference = 301.6;
 
   const progressOffset =
@@ -161,7 +204,7 @@ function StatCard({
 /* SKILL GAP CARD                                                             */
 /* -------------------------------------------------------------------------- */
 
-function SkillGapCard({ skillGaps }) {
+function SkillGapCard({ skillGaps = [] }) {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
       <div className="flex items-start justify-between gap-4">
@@ -171,7 +214,8 @@ function SkillGapCard({ skillGaps }) {
           </h2>
 
           <p className="mt-1 text-[11px] text-slate-400">
-            Skills companies are asking for that you haven't fully built yet.
+            Skills companies are asking for that you haven't fully
+            built yet.
           </p>
         </div>
 
@@ -184,56 +228,83 @@ function SkillGapCard({ skillGaps }) {
         </NavLink>
       </div>
 
-      <div className="mt-6 space-y-5">
-        {skillGaps.map((skill) => {
-          const gap = skill.required - skill.current;
+      <div className="mt-6">
+        {skillGaps.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-slate-200 px-5 py-8 text-center">
+            <TrendingUp
+              size={22}
+              className="mx-auto text-slate-300"
+            />
 
-          return (
-            <div key={skill.name}>
-              <div className="mb-2 flex items-center justify-between gap-4">
-                <span className="text-xs font-medium text-slate-700">
-                  {skill.name}
-                </span>
+            <p className="mt-3 text-xs font-medium text-slate-600">
+              Skill gap analysis isn't available yet
+            </p>
 
-                <span className="text-[10px] text-slate-400">
-                  You:{" "}
-                  <span className="font-semibold text-slate-600">
-                    {skill.current}%
-                  </span>
-                  {" · "}
-                  Needed:{" "}
-                  <span className="font-semibold text-slate-600">
-                    {skill.required}%
-                  </span>
-                </span>
-              </div>
+            <p className="mx-auto mt-1 max-w-sm text-[11px] leading-4 text-slate-400">
+              Skill gaps will appear once your target-role
+              matching and analysis service is connected.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            {skillGaps.map((skill) => {
+              const gap = Math.max(
+                0,
+                skill.required - skill.current
+              );
 
-              <div className="relative h-2 overflow-hidden rounded-full bg-slate-100">
-                <div
-                  className="absolute left-0 top-0 h-full rounded-full bg-teal-500"
-                  style={{ width: `${skill.current}%` }}
-                />
+              return (
+                <div key={skill.name}>
+                  <div className="mb-2 flex items-center justify-between gap-4">
+                    <span className="text-xs font-medium text-slate-700">
+                      {skill.name}
+                    </span>
 
-                <div
-                  className="absolute top-0 h-full w-px bg-slate-500"
-                  style={{ left: `${skill.required}%` }}
-                />
-              </div>
+                    <span className="text-[10px] text-slate-400">
+                      You:{" "}
+                      <span className="font-semibold text-slate-600">
+                        {skill.current}%
+                      </span>
+                      {" · "}
+                      Needed:{" "}
+                      <span className="font-semibold text-slate-600">
+                        {skill.required}%
+                      </span>
+                    </span>
+                  </div>
 
-              <div className="mt-1.5 flex justify-between">
-                <span className="text-[9px] text-slate-400">
-                  {gap}% gap remaining
-                </span>
+                  <div className="relative h-2 overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className="absolute left-0 top-0 h-full rounded-full bg-teal-500"
+                      style={{
+                        width: `${skill.current}%`,
+                      }}
+                    />
 
-                {gap >= 40 && (
-                  <span className="text-[9px] font-medium text-orange-500">
-                    High priority
-                  </span>
-                )}
-              </div>
-            </div>
-          );
-        })}
+                    <div
+                      className="absolute top-0 h-full w-px bg-slate-500"
+                      style={{
+                        left: `${skill.required}%`,
+                      }}
+                    />
+                  </div>
+
+                  <div className="mt-1.5 flex justify-between">
+                    <span className="text-[9px] text-slate-400">
+                      {gap}% gap remaining
+                    </span>
+
+                    {gap >= 40 && (
+                      <span className="text-[9px] font-medium text-orange-500">
+                        High priority
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );
@@ -243,7 +314,7 @@ function SkillGapCard({ skillGaps }) {
 /* JOB MATCHES                                                                */
 /* -------------------------------------------------------------------------- */
 
-function JobMatchesCard({ matchedJobs }) {
+function JobMatchesCard({ matchedJobs = [] }) {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
       <div className="flex items-start justify-between gap-4">
@@ -266,53 +337,76 @@ function JobMatchesCard({ matchedJobs }) {
         </NavLink>
       </div>
 
-      <div className="mt-5 divide-y divide-slate-100">
-        {matchedJobs.map((job) => (
-          <div
-            key={`${job.companyName}-${job.role}`}
-            className="group flex items-center gap-3 py-3.5 first:pt-0 last:pb-0"
-          >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-semibold text-slate-600">
-              {job.company}
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-semibold text-slate-800">
-                {job.role}
-              </p>
-
-              <div className="mt-1 flex items-center gap-1 text-[10px] text-slate-400">
-                <span>{job.companyName}</span>
-                <span>·</span>
-                <MapPin size={10} />
-                <span>{job.location}</span>
-              </div>
-            </div>
-
-            <div className="text-right">
-              <p
-                className={`text-sm font-semibold ${
-                  job.match >= 80
-                    ? "text-teal-600"
-                    : job.match >= 75
-                    ? "text-amber-500"
-                    : "text-orange-500"
-                }`}
-              >
-                {job.match}%
-              </p>
-
-              <p className="text-[9px] text-slate-400">
-                match
-              </p>
-            </div>
-
-            <ChevronRight
-              size={15}
-              className="text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-slate-500"
+      <div className="mt-5">
+        {matchedJobs.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-slate-200 px-5 py-8 text-center">
+            <BriefcaseBusiness
+              size={22}
+              className="mx-auto text-slate-300"
             />
+
+            <p className="mt-3 text-xs font-medium text-slate-600">
+              No job matches yet
+            </p>
+
+            <p className="mx-auto mt-1 max-w-sm text-[11px] leading-4 text-slate-400">
+              Job recommendations will appear here once the job
+              matching service is connected.
+            </p>
           </div>
-        ))}
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {matchedJobs.map((job) => (
+              <div
+                key={`${job.companyName}-${job.role}`}
+                className="group flex items-center gap-3 py-3.5 first:pt-0 last:pb-0"
+              >
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-semibold text-slate-600">
+                  {job.company}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-semibold text-slate-800">
+                    {job.role}
+                  </p>
+
+                  <div className="mt-1 flex items-center gap-1 text-[10px] text-slate-400">
+                    <span>{job.companyName}</span>
+
+                    <span>·</span>
+
+                    <MapPin size={10} />
+
+                    <span>{job.location}</span>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <p
+                    className={`text-sm font-semibold ${
+                      job.match >= 80
+                        ? "text-teal-600"
+                        : job.match >= 75
+                        ? "text-amber-500"
+                        : "text-orange-500"
+                    }`}
+                  >
+                    {job.match}%
+                  </p>
+
+                  <p className="text-[9px] text-slate-400">
+                    match
+                  </p>
+                </div>
+
+                <ChevronRight
+                  size={15}
+                  className="text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-slate-500"
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
@@ -323,6 +417,10 @@ function JobMatchesCard({ matchedJobs }) {
 /* -------------------------------------------------------------------------- */
 
 function NextStepCard({ nextStep }) {
+  if (!nextStep) {
+    return null;
+  }
+
   return (
     <section className="relative overflow-hidden rounded-2xl bg-slate-900 p-5 text-white sm:p-6">
       <div className="absolute -right-8 -top-10 h-32 w-32 rounded-full bg-teal-500/10 blur-2xl" />
@@ -330,7 +428,10 @@ function NextStepCard({ nextStep }) {
       <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="mb-2 flex items-center gap-2">
-            <Sparkles size={15} className="text-teal-400" />
+            <Sparkles
+              size={15}
+              className="text-teal-400"
+            />
 
             <span className="text-[10px] font-semibold uppercase tracking-wider text-teal-400">
               Recommended next step
@@ -379,9 +480,10 @@ function DashboardSkeleton() {
           <div className="h-33 rounded-2xl bg-slate-200" />
         </div>
       </div>
+
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <div className="h-8.75 rounded-2xl bg-slate-200" />
-        <div className="h-8.75 rounded-2xl bg-slate-200" />
+        <div className="h-88 rounded-2xl bg-slate-200" />
+        <div className="h-88 rounded-2xl bg-slate-200" />
       </div>
     </div>
   );
@@ -404,7 +506,8 @@ function DashboardError({ onRetry }) {
         </h2>
 
         <p className="mt-1 text-xs text-slate-400">
-          Something went wrong while fetching your dashboard data.
+          Something went wrong while fetching your dashboard
+          data.
         </p>
 
         <button
@@ -440,7 +543,11 @@ export default function Dashboard() {
       setDashboard(data);
     } catch (err) {
       console.error("Dashboard loading failed:", err);
-      setError("Failed to load dashboard");
+
+      setError(
+        err?.response?.data?.message ||
+          "Failed to load dashboard"
+      );
     } finally {
       setLoading(false);
     }
@@ -489,6 +596,14 @@ export default function Dashboard() {
   }
 
   /* ------------------------------------------------------------------------ */
+  /* SAFETY CHECK                                                              */
+  /* ------------------------------------------------------------------------ */
+
+  if (!dashboard) {
+    return null;
+  }
+
+  /* ------------------------------------------------------------------------ */
   /* DASHBOARD                                                                 */
   /* ------------------------------------------------------------------------ */
 
@@ -517,8 +632,8 @@ export default function Dashboard() {
               </h1>
 
               <p className="mt-2 text-xs text-slate-500 sm:text-sm">
-                Placement season opens in about 8 weeks. Here's where
-                things stand.
+                Here's where your placement profile currently
+                stands.
               </p>
             </div>
 
@@ -544,7 +659,7 @@ export default function Dashboard() {
               icon={CircleUserRound}
               label="Profile completed"
               value={`${dashboard.stats.profileCompletion}%`}
-              description="Add work experience to push past 80%"
+              description="Complete your profile to improve your placement readiness."
               accent="bg-blue-50 text-blue-600"
             />
 
@@ -552,23 +667,23 @@ export default function Dashboard() {
               icon={BriefcaseBusiness}
               label="Jobs that match you"
               value={dashboard.stats.matchedJobs}
-              description="Updated 2 hours ago"
+              description="Job matching will appear once the matching service is connected."
               accent="bg-teal-50 text-teal-600"
             />
 
             <StatCard
               icon={CheckCircle2}
-              label="Skills verified"
-              value={`${dashboard.stats.verifiedSkills} / ${dashboard.stats.totalSkills}`}
-              description={`${dashboard.stats.totalSkills - dashboard.stats.verifiedSkills} in-demand skills still missing`}
+              label="Skills extracted"
+              value={dashboard.stats.totalSkills}
+              description="Skills extracted from your uploaded resume."
               accent="bg-violet-50 text-violet-600"
             />
 
             <StatCard
-              icon={Zap}
+              icon={Activity}
               label="Active applications"
               value={dashboard.stats.activeApplications}
-              description="Your current active applications"
+              description="Application tracking will appear once connected."
               accent="bg-amber-50 text-amber-600"
             />
           </div>

@@ -298,29 +298,35 @@ function LandingPage() {
       // Store JWT
       localStorage.setItem("placeReadyToken", data.token);
 
-      // Get existing user/profile data
+      // Get latest user/profile data from DB
       const userData = await getUserInfo();
 
-      console.log("User info:", userData);
+      console.log("User info from DB:", userData);
 
-      const user = userData?.user;
-      const profile = user?.profile;
+      const user = userData?.user || {};
+      const profile = user?.profile || {};
 
-      // Check whether onboarding has already been completed
+      /*
+       * Introduction is considered complete when the
+       * important onboarding information exists in DB.
+       */
       const onboardingComplete =
-        Boolean(profile?.branch) &&
+        Boolean(user?.fullname) &&
         Boolean(user?.graduationYear) &&
+        Boolean(profile?.branch) &&
         Boolean(profile?.currentYear) &&
         Boolean(profile?.resumeFileUrl) &&
         ((Array.isArray(profile?.targetRoles) &&
           profile.targetRoles.length > 0) ||
           Boolean(profile?.customGoal?.trim()));
 
-      closeDrawer();
+      console.log("Onboarding complete:", onboardingComplete);
 
       if (onboardingComplete) {
+        closeDrawer();
         navigate("/dashboard");
       } else {
+        closeDrawer();
         navigate("/introduction");
       }
     } catch (error) {

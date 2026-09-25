@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowLeft,
+  AlertCircle,
   BriefcaseBusiness,
   CheckCircle2,
   FileText,
@@ -10,9 +10,7 @@ import {
   Save,
   Trash2,
   Upload,
-  AlertCircle,
 } from "lucide-react";
-import { NavLink } from "react-router-dom";
 
 import {
   getProfileData,
@@ -42,7 +40,7 @@ function FormField({
 
       <input
         type={type}
-        value={value || ""}
+        value={value ?? ""}
         onChange={onChange}
         placeholder={placeholder}
         className="
@@ -61,7 +59,12 @@ function FormField({
 /* SECTION CARD                                                               */
 /* -------------------------------------------------------------------------- */
 
-function SectionCard({ title, label, children, action }) {
+function SectionCard({
+  title,
+  label,
+  children,
+  action,
+}) {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
       <div className="mb-5 flex items-center justify-between gap-4">
@@ -80,6 +83,120 @@ function SectionCard({ title, label, children, action }) {
 
       {children}
     </section>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* BASIC INFORMATION                                                          */
+/* -------------------------------------------------------------------------- */
+
+function BasicInformationSection({
+  profile,
+  setProfile,
+}) {
+  const updateUser = (field, value) => {
+    setProfile((previous) => ({
+      ...previous,
+      user: {
+        ...previous.user,
+        [field]: value,
+      },
+    }));
+  };
+
+  const updateProfile = (field, value) => {
+    setProfile((previous) => ({
+      ...previous,
+      [field]: value,
+    }));
+  };
+
+  return (
+    <SectionCard
+      label="About you"
+      title="Basic information"
+    >
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <FormField
+          label="Full name"
+          value={profile.user?.fullname}
+          placeholder="Your full name"
+          onChange={(event) =>
+            updateUser("fullname", event.target.value)
+          }
+        />
+
+        <FormField
+          label="Email"
+          type="email"
+          value={profile.user?.email}
+          placeholder="your@email.com"
+          onChange={(event) =>
+            updateUser("email", event.target.value)
+          }
+        />
+
+        <FormField
+          label="Phone"
+          value={profile.user?.phone}
+          placeholder="Phone number"
+          onChange={(event) =>
+            updateUser("phone", event.target.value)
+          }
+        />
+
+        <FormField
+          label="Graduation year"
+          type="number"
+          value={profile.user?.graduationYear}
+          placeholder="2027"
+          onChange={(event) =>
+            updateUser(
+              "graduationYear",
+              event.target.value
+            )
+          }
+        />
+
+        <FormField
+          label="Branch"
+          value={profile.branch}
+          placeholder="Computer Science & Engineering"
+          onChange={(event) =>
+            updateProfile(
+              "branch",
+              event.target.value
+            )
+          }
+        />
+
+        <FormField
+          label="Current year"
+          type="number"
+          value={profile.currentYear}
+          placeholder="4"
+          onChange={(event) =>
+            updateProfile(
+              "currentYear",
+              event.target.value
+            )
+          }
+        />
+
+        <FormField
+          label="CGPA"
+          type="number"
+          value={profile.cgpa}
+          placeholder="7.5"
+          onChange={(event) =>
+            updateProfile(
+              "cgpa",
+              event.target.value
+            )
+          }
+        />
+      </div>
+    </SectionCard>
   );
 }
 
@@ -133,7 +250,9 @@ function ResumeSection({
         action={
           <button
             type="button"
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() =>
+              fileInputRef.current?.click()
+            }
             className="text-[11px] font-semibold text-teal-600 hover:text-teal-700"
           >
             Replace
@@ -157,7 +276,8 @@ function ResumeSection({
 
           <div className="min-w-0 flex-1">
             <p className="truncate text-xs font-semibold text-slate-800">
-              {resume.fileName}
+              {resume.fileName ||
+                "Uploaded resume"}
             </p>
 
             <p className="mt-1 text-[10px] text-slate-400">
@@ -170,17 +290,15 @@ function ResumeSection({
             Uploaded
           </div>
         </div>
-
-        <div className="mt-4 flex items-center gap-2 text-[10px] text-slate-400">
-          <SparkleIcon />
-          Resume parsing will identify your skills once the backend is connected.
-        </div>
       </SectionCard>
     );
   }
 
   return (
-    <SectionCard label="Resume" title="Upload your resume">
+    <SectionCard
+      label="Resume"
+      title="Upload your resume"
+    >
       <input
         ref={fileInputRef}
         type="file"
@@ -198,7 +316,9 @@ function ResumeSection({
         }}
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
+        onClick={() =>
+          fileInputRef.current?.click()
+        }
         className={`
           flex min-h-52.5 cursor-pointer flex-col items-center
           justify-center rounded-xl border border-dashed
@@ -221,24 +341,10 @@ function ResumeSection({
         </p>
 
         <p className="mt-1.5 text-[11px] text-slate-400">
-          PDF or DOCX, up to 5 MB
-          {" · "}
+          PDF or DOCX, up to 5 MB ·{" "}
           <span className="font-medium text-teal-600">
             browse files
           </span>
-        </p>
-      </div>
-
-      <div className="mt-3 flex items-start gap-2 rounded-lg bg-blue-50 px-3 py-2.5">
-        <FileText
-          size={14}
-          className="mt-0.5 shrink-0 text-blue-500"
-        />
-
-        <p className="text-[10px] leading-4 text-blue-600">
-          Upload your latest resume. PlaceReady will eventually
-          extract your skills and use them for readiness analysis
-          and job matching.
         </p>
       </div>
     </SectionCard>
@@ -253,54 +359,169 @@ function EducationSection({
   education,
   setEducation,
 }) {
-  const updateField = (field, value) => {
-    setEducation((previous) => ({
+  const addEducation = () => {
+    setEducation((previous) => [
       ...previous,
-      [field]: value,
-    }));
+      {
+        id: Date.now(),
+        degree: "",
+        branch: "",
+        institute: "",
+        year: "",
+        cgpa: "",
+      },
+    ]);
+  };
+
+  const removeEducation = (id) => {
+    setEducation((previous) =>
+      previous.filter((item) => item.id !== id)
+    );
+  };
+
+  const updateEducation = (
+    id,
+    field,
+    value
+  ) => {
+    setEducation((previous) =>
+      previous.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              [field]: value,
+            }
+          : item
+      )
+    );
   };
 
   return (
     <SectionCard
       label="Education"
       title="Academic background"
+      action={
+        <button
+          type="button"
+          onClick={addEducation}
+          className="flex items-center gap-1 text-[11px] font-semibold text-teal-600 hover:text-teal-700"
+        >
+          <Plus size={14} />
+          Add entry
+        </button>
+      }
     >
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <FormField
-          label="Degree & Branch"
-          value={education.degree}
-          placeholder="e.g. B.Tech Computer Science"
-          onChange={(event) =>
-            updateField("degree", event.target.value)
-          }
-        />
+      <div className="space-y-5">
+        {education.length === 0 && (
+          <div className="rounded-xl border border-dashed border-slate-200 py-8 text-center">
+            <p className="text-xs font-medium text-slate-500">
+              No education added yet
+            </p>
 
-        <FormField
-          label="Institution"
-          value={education.institution}
-          placeholder="Your university"
-          onChange={(event) =>
-            updateField("institution", event.target.value)
-          }
-        />
+            <button
+              type="button"
+              onClick={addEducation}
+              className="mt-2 text-[11px] font-semibold text-teal-600"
+            >
+              Add education
+            </button>
+          </div>
+        )}
 
-        <FormField
-          label="Duration"
-          value={education.duration}
-          placeholder="e.g. 2023-2027"
-          onChange={(event) =>
-            updateField("duration", event.target.value)
-          }
-        />
+        {education.map((item, index) => (
+          <div
+            key={item.id}
+            className="relative rounded-xl border border-slate-200 p-4"
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                Education {index + 1}
+              </span>
 
-        <FormField
-          label="GPA / CGPA"
-          value={education.cgpa}
-          placeholder="e.g. 7.5 / 10"
-          onChange={(event) =>
-            updateField("cgpa", event.target.value)
-          }
-        />
+              {education.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    removeEducation(item.id)
+                  }
+                  className="flex items-center gap-1 text-[10px] font-medium text-red-500 hover:text-red-600"
+                >
+                  <Trash2 size={13} />
+                  Remove
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormField
+                label="Degree"
+                value={item.degree}
+                placeholder="e.g. B.Tech"
+                onChange={(event) =>
+                  updateEducation(
+                    item.id,
+                    "degree",
+                    event.target.value
+                  )
+                }
+              />
+
+              <FormField
+                label="Branch"
+                value={item.branch}
+                placeholder="e.g. Computer Science"
+                onChange={(event) =>
+                  updateEducation(
+                    item.id,
+                    "branch",
+                    event.target.value
+                  )
+                }
+              />
+
+              <FormField
+                label="Institution"
+                value={item.institute}
+                placeholder="Your university"
+                onChange={(event) =>
+                  updateEducation(
+                    item.id,
+                    "institute",
+                    event.target.value
+                  )
+                }
+              />
+
+              <FormField
+                label="Year"
+                type="number"
+                value={item.year}
+                placeholder="2027"
+                onChange={(event) =>
+                  updateEducation(
+                    item.id,
+                    "year",
+                    event.target.value
+                  )
+                }
+              />
+
+              <FormField
+                label="CGPA"
+                type="number"
+                value={item.cgpa}
+                placeholder="7.5"
+                onChange={(event) =>
+                  updateEducation(
+                    item.id,
+                    "cgpa",
+                    event.target.value
+                  )
+                }
+              />
+            </div>
+          </div>
+        ))}
       </div>
     </SectionCard>
   );
@@ -319,11 +540,10 @@ function ExperienceSection({
       ...previous,
       {
         id: Date.now(),
-        jobTitle: "",
-        company: "",
+        title: "",
+        org: "",
+        durationMonths: "",
         description: "",
-        startDate: "",
-        endDate: "",
       },
     ]);
   };
@@ -398,29 +618,27 @@ function ExperienceSection({
                 Experience {index + 1}
               </span>
 
-              {experience.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    removeExperience(item.id)
-                  }
-                  className="flex items-center gap-1 text-[10px] font-medium text-red-500 hover:text-red-600"
-                >
-                  <Trash2 size={13} />
-                  Remove
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() =>
+                  removeExperience(item.id)
+                }
+                className="flex items-center gap-1 text-[10px] font-medium text-red-500 hover:text-red-600"
+              >
+                <Trash2 size={13} />
+                Remove
+              </button>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
                 label="Job Title"
-                value={item.jobTitle}
+                value={item.title}
                 placeholder="e.g. Data Analyst Intern"
                 onChange={(event) =>
                   updateExperience(
                     item.id,
-                    "jobTitle",
+                    "title",
                     event.target.value
                   )
                 }
@@ -428,38 +646,26 @@ function ExperienceSection({
 
               <FormField
                 label="Company"
-                value={item.company}
+                value={item.org}
                 placeholder="Company name"
                 onChange={(event) =>
                   updateExperience(
                     item.id,
-                    "company",
+                    "org",
                     event.target.value
                   )
                 }
               />
 
               <FormField
-                label="Start Date"
-                value={item.startDate}
-                placeholder="e.g. June 2026"
+                label="Duration (months)"
+                type="number"
+                value={item.durationMonths}
+                placeholder="e.g. 3"
                 onChange={(event) =>
                   updateExperience(
                     item.id,
-                    "startDate",
-                    event.target.value
-                  )
-                }
-              />
-
-              <FormField
-                label="End Date"
-                value={item.endDate}
-                placeholder="e.g. August 2026"
-                onChange={(event) =>
-                  updateExperience(
-                    item.id,
-                    "endDate",
+                    "durationMonths",
                     event.target.value
                   )
                 }
@@ -499,14 +705,33 @@ function ExperienceSection({
 }
 
 /* -------------------------------------------------------------------------- */
-/* SMALL ICON                                                                 */
+/* SKILLS                                                                     */
 /* -------------------------------------------------------------------------- */
 
-function SparkleIcon() {
+function SkillsSection({ skills }) {
   return (
-    <span className="mt-0.5 text-blue-500">
-      ✦
-    </span>
+    <SectionCard
+      label="Resume analysis"
+      title="Skills extracted from your resume"
+    >
+      {skills.length === 0 ? (
+        <p className="text-xs text-slate-400">
+          No skills have been extracted yet. Upload your
+          resume to let PlaceReady analyze it.
+        </p>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {skills.map((skill) => (
+            <span
+              key={skill}
+              className="rounded-full bg-teal-50 px-3 py-1.5 text-[11px] font-medium text-teal-700"
+            >
+              {skill}
+            </span>
+          ))}
+        </div>
+      )}
+    </SectionCard>
   );
 }
 
@@ -522,10 +747,8 @@ function ProfileSkeleton() {
         <div className="mt-3 h-4 w-72 rounded bg-slate-200" />
       </div>
 
+      <div className="h-70 rounded-2xl bg-slate-200" />
       <div className="h-52.5 rounded-2xl bg-slate-200" />
-
-      <div className="h-55 rounded-2xl bg-slate-200" />
-
       <div className="h-75 rounded-2xl bg-slate-200" />
     </div>
   );
@@ -569,27 +792,15 @@ function ProfileError({ onRetry }) {
 
 export default function Profile() {
   const [profile, setProfile] = useState(null);
+  const [education, setEducation] = useState([]);
+  const [experience, setExperience] = useState([]);
 
-  const [education, setEducation] =
-    useState(null);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const [experience, setExperience] =
-    useState([]);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [uploading, setUploading] =
-    useState(false);
-
-  const [saving, setSaving] =
-    useState(false);
-
-  const [error, setError] =
-    useState(null);
-
-  const [saveMessage, setSaveMessage] =
-    useState("");
+  const [error, setError] = useState(null);
+  const [saveMessage, setSaveMessage] = useState("");
 
   /* ------------------------------------------------------------------------ */
   /* LOAD PROFILE                                                             */
@@ -603,7 +814,17 @@ export default function Profile() {
       const data = await getProfileData();
 
       setProfile(data);
-      setEducation(data.education);
+      setEducation(
+        (data.education || []).map(
+          (item, index) => ({
+            ...item,
+            id:
+              item.id ||
+              `${Date.now()}-${index}`,
+          })
+        )
+      );
+
       setExperience(data.experience || []);
     } catch (err) {
       console.error(
@@ -612,7 +833,8 @@ export default function Profile() {
       );
 
       setError(
-        "Failed to load your profile."
+        err?.response?.data?.message ||
+          "Failed to load your profile."
       );
     } finally {
       setLoading(false);
@@ -633,19 +855,33 @@ export default function Profile() {
       setSaveMessage("");
       setError(null);
 
-      const result =
-        await uploadResume(file);
+      await uploadResume(file);
 
-      if (result.success) {
-        setProfile((previous) => ({
-          ...previous,
-          resume: result.resume,
-        }));
+      /*
+       * Refresh from MongoDB after upload.
+       * This ensures resumeFileUrl and parsed
+       * skills come from the actual backend.
+       */
+      const updated = await getProfileData();
 
-        setSaveMessage(
-          "Resume uploaded successfully."
-        );
-      }
+      setProfile(updated);
+
+      setEducation(
+        (updated.education || []).map(
+          (item, index) => ({
+            ...item,
+            id:
+              item.id ||
+              `${Date.now()}-${index}`,
+          })
+        )
+      );
+
+      setExperience(updated.experience || []);
+
+      setSaveMessage(
+        "Resume uploaded and profile updated successfully."
+      );
     } catch (err) {
       console.error(
         "Resume upload failed:",
@@ -653,7 +889,8 @@ export default function Profile() {
       );
 
       setError(
-        "Failed to upload resume."
+        err?.response?.data?.message ||
+          "Failed to upload resume."
       );
     } finally {
       setUploading(false);
@@ -677,25 +914,40 @@ export default function Profile() {
       };
 
       const result =
-        await updateProfile(
-          updatedProfile
-        );
+        await updateProfile(updatedProfile);
 
-      if (result.success) {
-        setProfile((previous) => ({
-          ...previous,
-          education,
-          experience,
-        }));
+      /*
+       * Reload from DB after saving so the UI always
+       * represents the actual persisted state.
+       */
+      const freshProfile =
+        await getProfileData();
 
-        setSaveMessage(
+      setProfile(freshProfile);
+
+      setEducation(
+        (freshProfile.education || []).map(
+          (item, index) => ({
+            ...item,
+            id:
+              item.id ||
+              `${Date.now()}-${index}`,
+          })
+        )
+      );
+
+      setExperience(
+        freshProfile.experience || []
+      );
+
+      setSaveMessage(
+        result?.message ||
           "Profile saved successfully."
-        );
+      );
 
-        setTimeout(() => {
-          setSaveMessage("");
-        }, 3000);
-      }
+      setTimeout(() => {
+        setSaveMessage("");
+      }, 3000);
     } catch (err) {
       console.error(
         "Profile update failed:",
@@ -703,7 +955,8 @@ export default function Profile() {
       );
 
       setError(
-        "Failed to save your profile."
+        err?.response?.data?.message ||
+          "Failed to save your profile."
       );
     } finally {
       setSaving(false);
@@ -740,10 +993,16 @@ export default function Profile() {
         pageTitle="My Profile"
       >
         <main className="w-full min-w-0 px-4 sm:px-6 lg:px-8">
-          <ProfileError onRetry={loadProfile} />
+          <ProfileError
+            onRetry={loadProfile}
+          />
         </main>
       </AppLayout>
     );
+  }
+
+  if (!profile) {
+    return null;
   }
 
   /* ------------------------------------------------------------------------ */
@@ -775,7 +1034,8 @@ export default function Profile() {
               </h1>
 
               <p className="mt-2 text-xs text-slate-500 sm:text-sm">
-                Keep your profile updated to improve your readiness score.
+                Keep your profile updated to improve your
+                placement readiness.
               </p>
             </div>
 
@@ -821,6 +1081,12 @@ export default function Profile() {
 
         {/* Profile content */}
         <div className="space-y-5">
+          {/* Basic information */}
+          <BasicInformationSection
+            profile={profile}
+            setProfile={setProfile}
+          />
+
           {/* Resume */}
           <ResumeSection
             resume={profile.resume}
@@ -840,13 +1106,17 @@ export default function Profile() {
             setExperience={setExperience}
           />
 
+          {/* Skills */}
+          <SkillsSection
+            skills={profile.parsedSkills || []}
+          />
+
           {/* Save */}
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-
             <button
               type="button"
               onClick={handleSave}
-              disabled={saving}
+              disabled={saving || uploading}
               className="
                 flex w-full items-center justify-center gap-2
                 rounded-lg bg-teal-600 px-5 py-2.5

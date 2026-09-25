@@ -49,8 +49,19 @@ export default function Sidebar({
   setMobileOpen,
   readiness,
 }) {
-  const score = readiness?.score ?? 74;
-  const change = readiness?.change ?? 6;
+  const hasReadiness =
+    readiness &&
+    typeof readiness.score === "number";
+
+  const score = hasReadiness
+    ? Math.min(Math.max(readiness.score, 0), 100)
+    : null;
+
+  const change =
+    hasReadiness &&
+    typeof readiness.change === "number"
+      ? readiness.change
+      : null;
 
   return (
     <>
@@ -86,7 +97,10 @@ export default function Sidebar({
             className="flex items-center gap-2.5"
           >
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-600 text-white">
-              <TrendingUp size={19} strokeWidth={2.5} />
+              <TrendingUp
+                size={19}
+                strokeWidth={2.5}
+              />
             </div>
 
             <span className="text-[17px] font-semibold tracking-tight text-slate-900">
@@ -132,7 +146,11 @@ export default function Sidebar({
                     `
                   }
                 >
-                  <Icon size={17} strokeWidth={1.8} />
+                  <Icon
+                    size={17}
+                    strokeWidth={1.8}
+                  />
+
                   <span>{item.label}</span>
                 </NavLink>
               );
@@ -142,38 +160,78 @@ export default function Sidebar({
 
         {/* Readiness */}
         <div className="shrink-0 border-t border-slate-200 p-5">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-[11px] font-medium text-slate-400">
-              Readiness score
-            </span>
+          {hasReadiness ? (
+            <>
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-[11px] font-medium text-slate-400">
+                  Readiness score
+                </span>
 
-            <span className="text-[11px] font-semibold text-teal-600">
-              +{change}
-            </span>
-          </div>
+                {change !== null && (
+                  <span className="text-[11px] font-semibold text-teal-600">
+                    +{change}
+                  </span>
+                )}
+              </div>
 
-          <div className="mb-2 flex items-end gap-1">
-            <span className="text-2xl font-semibold text-slate-900">
-              {score}
-            </span>
+              <div className="mb-2 flex items-end gap-1">
+                <span className="text-2xl font-semibold text-slate-900">
+                  {score}
+                </span>
 
-            <span className="mb-1 text-xs text-slate-400">
-              /100
-            </span>
-          </div>
+                <span className="mb-1 text-xs text-slate-400">
+                  /100
+                </span>
+              </div>
 
-          <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
-            <div
-              className="h-full rounded-full bg-teal-600 transition-all duration-500"
-              style={{
-                width: `${Math.min(Math.max(score, 0), 100)}%`,
-              }}
-            />
-          </div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className="h-full rounded-full bg-teal-600 transition-all duration-500"
+                  style={{
+                    width: `${score}%`,
+                  }}
+                />
+              </div>
 
-          <p className="mt-2 text-[11px] leading-4 text-slate-400">
-            Complete your profile to improve your score.
-          </p>
+              <p className="mt-2 text-[11px] leading-4 text-slate-400">
+                Keep improving your profile and skills.
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-[11px] font-medium text-slate-400">
+                  Readiness score
+                </span>
+
+                <span className="text-[10px] font-medium text-slate-400">
+                  Pending
+                </span>
+              </div>
+
+              <div className="mb-2 flex items-end gap-1">
+                <span className="text-2xl font-semibold text-slate-400">
+                  —
+                </span>
+
+                <span className="mb-1 text-xs text-slate-300">
+                  /100
+                </span>
+              </div>
+
+              <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className="h-full rounded-full bg-slate-200"
+                  style={{ width: "0%" }}
+                />
+              </div>
+
+              <p className="mt-2 text-[11px] leading-4 text-slate-400">
+                Your readiness score will appear once the
+                assessment service is connected.
+              </p>
+            </>
+          )}
         </div>
       </aside>
     </>

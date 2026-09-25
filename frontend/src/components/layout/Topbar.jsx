@@ -1,6 +1,11 @@
 // src/components/layout/Topbar.jsx
 
-import { Activity, Menu, Search, LogOut } from "lucide-react";
+import {
+  Activity,
+  Menu,
+  Search,
+  LogOut,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function Topbar({
@@ -19,12 +24,10 @@ export default function Topbar({
       .map((word) => word[0])
       .join("")
       .slice(0, 2)
-      .toUpperCase() || "PD";
+      .toUpperCase() || "ST";
 
   const handleSignOut = () => {
-    // Temporary logout
     localStorage.removeItem("placeReadyToken");
-    localStorage.removeItem("placeReadyUser");
 
     navigate("/");
   };
@@ -102,13 +105,13 @@ export default function Topbar({
               {user?.name || "Student"}
             </p>
 
-            <p className="text-[10px] text-slate-400">
-              {user?.role || "Student"}
+            <p className="text-[10px] capitalize text-slate-400">
+              {user?.role || "student"}
             </p>
           </div>
         </div>
 
-        {/* Temporary Sign out */}
+        {/* Sign out */}
         <button
           type="button"
           onClick={handleSignOut}
@@ -121,7 +124,10 @@ export default function Topbar({
           "
         >
           <LogOut size={15} />
-          <span className="hidden sm:inline">Sign out</span>
+
+          <span className="hidden sm:inline">
+            Sign out
+          </span>
         </button>
       </div>
     </header>
