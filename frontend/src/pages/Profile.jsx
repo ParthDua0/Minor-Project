@@ -201,6 +201,145 @@ function BasicInformationSection({
 }
 
 /* -------------------------------------------------------------------------- */
+/* CAREER GOALS & PREFERENCES                                                 */
+/* -------------------------------------------------------------------------- */
+
+function CareerGoalsSection({
+  profile,
+  setProfile,
+}) {
+  const roleOptions = [
+    "Software Engineer",
+    "Data Analyst",
+    "Data Scientist",
+    "ML Engineer",
+    "Frontend Developer",
+    "Backend Developer",
+    "Full Stack Developer",
+    "DevOps Engineer",
+    "UI/UX Designer",
+    "Product Manager",
+    "Business Analyst",
+    "Cybersecurity Analyst",
+  ];
+
+  const updateProfile = (field, value) => {
+    setProfile((previous) => ({
+      ...previous,
+      [field]: value,
+    }));
+  };
+
+  const toggleRole = (role) => {
+    const currentRoles = Array.isArray(profile.targetRoles)
+      ? profile.targetRoles
+      : [];
+
+    const alreadySelected = currentRoles.includes(role);
+
+    const updatedRoles = alreadySelected
+      ? currentRoles.filter((item) => item !== role)
+      : [...currentRoles, role];
+
+    updateProfile("targetRoles", updatedRoles);
+  };
+
+  return (
+    <SectionCard
+      label="Career"
+      title="Goals & preferences"
+    >
+      <div className="space-y-6">
+        {/* Target roles */}
+        <div>
+          <label className="mb-1.5 block text-[11px] font-medium text-slate-600">
+            Target roles
+          </label>
+
+          <p className="mb-3 text-[10px] text-slate-400">
+            Select the roles you are interested in for
+            internships or placements.
+          </p>
+
+          <div className="flex flex-wrap gap-2">
+            {roleOptions.map((role) => {
+              const selected =
+                Array.isArray(profile.targetRoles) &&
+                profile.targetRoles.includes(role);
+
+              return (
+                <button
+                  key={role}
+                  type="button"
+                  onClick={() => toggleRole(role)}
+                  className={`
+                    rounded-full border px-3 py-1.5
+                    text-[11px] font-medium transition
+                    ${
+                      selected
+                        ? "border-teal-600 bg-teal-600 text-white"
+                        : "border-slate-200 bg-white text-slate-600 hover:border-teal-300 hover:bg-teal-50 hover:text-teal-700"
+                    }
+                  `}
+                >
+                  {role}
+                </button>
+              );
+            })}
+          </div>
+
+          {Array.isArray(profile.targetRoles) &&
+            profile.targetRoles.length > 0 && (
+              <p className="mt-3 text-[10px] text-slate-400">
+                {profile.targetRoles.length} role
+                {profile.targetRoles.length !== 1
+                  ? "s"
+                  : ""}{" "}
+                selected
+              </p>
+            )}
+        </div>
+
+        {/* Custom goal */}
+        <div>
+          <label className="mb-1.5 block text-[11px] font-medium text-slate-600">
+            Career goal
+          </label>
+
+          <p className="mb-2 text-[10px] text-slate-400">
+            Tell us what you want to achieve during your
+            placement preparation.
+          </p>
+
+          <textarea
+            value={profile.customGoal ?? ""}
+            onChange={(event) =>
+              updateProfile(
+                "customGoal",
+                event.target.value
+              )
+            }
+            rows={4}
+            placeholder="e.g. I want to secure a Data Analyst internship and become placement-ready for analytics roles."
+            className="
+              w-full resize-none rounded-lg border border-slate-200
+              bg-white px-3 py-2.5 text-xs text-slate-800
+              outline-none transition
+              placeholder:text-slate-300
+              focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10
+            "
+          />
+
+          <p className="mt-1.5 text-right text-[10px] text-slate-400">
+            {(profile.customGoal || "").length}/500
+          </p>
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 /* RESUME SECTION                                                             */
 /* -------------------------------------------------------------------------- */
 
@@ -814,6 +953,7 @@ export default function Profile() {
       const data = await getProfileData();
 
       setProfile(data);
+
       setEducation(
         (data.education || []).map(
           (item, index) => ({
@@ -857,11 +997,6 @@ export default function Profile() {
 
       await uploadResume(file);
 
-      /*
-       * Refresh from MongoDB after upload.
-       * This ensures resumeFileUrl and parsed
-       * skills come from the actual backend.
-       */
       const updated = await getProfileData();
 
       setProfile(updated);
@@ -916,10 +1051,6 @@ export default function Profile() {
       const result =
         await updateProfile(updatedProfile);
 
-      /*
-       * Reload from DB after saving so the UI always
-       * represents the actual persisted state.
-       */
       const freshProfile =
         await getProfileData();
 
@@ -1083,6 +1214,12 @@ export default function Profile() {
         <div className="space-y-5">
           {/* Basic information */}
           <BasicInformationSection
+            profile={profile}
+            setProfile={setProfile}
+          />
+
+          {/* Career goals */}
+          <CareerGoalsSection
             profile={profile}
             setProfile={setProfile}
           />
