@@ -1,5 +1,3 @@
-// src/data/mockProfile.js
-
 export const mockProfileData = {
   user: {
     name: "Parth Dua",
