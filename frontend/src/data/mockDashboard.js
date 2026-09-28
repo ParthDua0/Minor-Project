@@ -1,5 +1,3 @@
-// src/data/mockDashboard.js
-
 export const mockDashboardData = {
   user: {
     name: "Parth",

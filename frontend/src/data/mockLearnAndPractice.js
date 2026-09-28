@@ -1,5 +1,3 @@
-// src/data/mockLearnAndPractice.js
-
 export const mockLearnAndPracticeData = {
   user: {
     name: "Parth",
