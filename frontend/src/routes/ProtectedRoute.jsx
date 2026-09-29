@@ -7,6 +7,6 @@ export default function ProtectedRoute() {
   if (!token) {
     return <Navigate to="/" replace state={{ from: location }} />;
   }
-
+  
   return <Outlet />;
 }
