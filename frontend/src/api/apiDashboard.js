@@ -4,7 +4,7 @@ export async function getDashboardData() {
   const response = await getUserInfo();
 
   const user = response?.user || {};
-  const profile = user?.profile || {};
+  const profile = response || {};
 
   const parsedSkills = Array.isArray(profile.parsedSkills)
     ? profile.parsedSkills
@@ -33,7 +33,7 @@ export async function getDashboardData() {
     profile.branch,
     profile.cgpa,
     profile.currentYear,
-    profile.resumeFileUrl,
+    profile.resume?.url,
     targetRoles.length > 0,
     profile.customGoal,
     parsedSkills.length > 0,
@@ -41,7 +41,7 @@ export async function getDashboardData() {
 
   const completedFields = profileFields.filter(Boolean).length;
 
-  const profileCompletion = Math.round(
+  const profileCompletion = response?.profileCompletion ?? Math.round(
     (completedFields / profileFields.length) * 100
   );
 
@@ -62,7 +62,7 @@ export async function getDashboardData() {
       customGoal: profile.customGoal || "",
       employmentType: profile.employmentType || "",
       workPreference: profile.workPreference || [],
-      resumeFileUrl: profile.resumeFileUrl || "",
+      resumeFileUrl: profile.resume?.url || "",
       parsedSkills,
       education,
       experience,

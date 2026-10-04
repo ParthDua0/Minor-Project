@@ -18,6 +18,7 @@ export default function Introduction() {
   const [step, setStep] = useState(1);
 
   const [profileData, setProfileData] = useState({
+    courseName: "",
     branch: "",
     graduationYear: "",
     cgpa: "",
@@ -51,9 +52,12 @@ export default function Introduction() {
       const extracted = profileData.extractedData || {};
 
       const payload = {
-        fullname: extracted.fullname || "",
-        email: extracted.email || "",
-        phone: extracted.phone || "",
+        onboardingCompleted: true,
+        // Do not replace account details with blanks when a resume omits them.
+        ...(extracted.fullname ? { fullname: extracted.fullname } : {}),
+        // The account email is established during sign-up. A resume can be
+        // outdated or belong to a template, so it must never replace it.
+        ...(extracted.phone ? { phone: extracted.phone } : {}),
 
         role: "student",
 
@@ -62,6 +66,7 @@ export default function Introduction() {
           : undefined,
 
         profile: {
+          courseName: profileData.courseName || "",
           branch: profileData.branch || "",
 
           cgpa: profileData.cgpa ? Number(profileData.cgpa) : undefined,
@@ -80,13 +85,15 @@ export default function Introduction() {
         },
 
         // Data extracted from resume
-        education: extracted.education || [],
-        experience: extracted.experience || [],
-        parsedSkills: extracted.parsedSkills || [],
+        ...(extracted.education?.length ? { education: extracted.education } : {}),
+        ...(extracted.experience?.length ? { experience: extracted.experience } : {}),
+        ...((extracted.skills || extracted.parsedSkills)?.length
+          ? { parsedSkills: extracted.skills || extracted.parsedSkills }
+          : {}),
 
-        linkedin: extracted.linkedin || "",
-        github: extracted.github || "",
-        portfolio: extracted.portfolio || "",
+        ...(extracted.linkedin ? { linkedin: extracted.linkedin } : {}),
+        ...(extracted.github ? { github: extracted.github } : {}),
+        ...(extracted.portfolio ? { portfolio: extracted.portfolio } : {}),
       };
 
       console.log("Saving onboarding data:", payload);

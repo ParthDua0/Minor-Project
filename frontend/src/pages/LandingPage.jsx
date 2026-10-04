@@ -304,21 +304,21 @@ function LandingPage() {
       console.log("User info from DB:", userData);
 
       const user = userData?.user || {};
-      const profile = user?.profile || {};
+      const profile = userData || {};
 
       /*
        * Introduction is considered complete when the
        * important onboarding information exists in DB.
        */
-      const onboardingComplete =
+      const onboardingComplete = Boolean(user?.onboardingCompleted) || (
         Boolean(user?.fullname) &&
         Boolean(user?.graduationYear) &&
         Boolean(profile?.branch) &&
         Boolean(profile?.currentYear) &&
-        Boolean(profile?.resumeFileUrl) &&
+        Boolean(profile?.resume?.url) &&
         ((Array.isArray(profile?.targetRoles) &&
           profile.targetRoles.length > 0) ||
-          Boolean(profile?.customGoal?.trim()));
+          Boolean(profile?.customGoal?.trim())));
 
       console.log("Onboarding complete:", onboardingComplete);
 

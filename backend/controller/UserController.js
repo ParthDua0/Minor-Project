@@ -2,6 +2,8 @@ const user = require('../model/userModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const sendEmail = require('../helper/sendEmail');
+const { totalMonths } = require('../helper/Resumecleaner');
+const { buildProfileResponse } = require('../helper/Profileresponse');
 
 const normalizeEmail = (email) => {
     if (!email || typeof email !== 'string' || !email.trim()) {
@@ -422,138 +424,141 @@ const registerUser = async (req, res) => {
     }
 };
 
+
+const str = (v) => (typeof v === 'string' ? v.trim() : undefined);
+const num = (v) => (v === '' || v === null || v === undefined || Number.isNaN(Number(v)) ? undefined : Number(v));
+const date = (v) => {
+    if (!v) return undefined;
+    const d = new Date(v);
+    return Number.isNaN(d.getTime()) ? undefined : d;
+};
+const strList = (list) => (Array.isArray(list) ? list.map(str).filter(Boolean) : []);
+ 
+const cleanEducation = (list) => list
+    .map((e) => ({
+        degree: str(e.degree),
+        branch: str(e.branch),
+        institute: str(e.institute),
+        startYear: num(e.startYear),
+        year: num(e.year),
+        cgpa: num(e.cgpa),
+        percentage: num(e.percentage)
+    }))
+    .filter((e) => e.degree || e.institute);
+ 
+const cleanExperience = (list) => list
+    .map((e) => {
+        const isCurrent = Boolean(e.isCurrent);
+        return {
+            title: str(e.title),
+            org: str(e.org),
+            startDate: date(e.startDate),
+            endDate: isCurrent ? undefined : date(e.endDate),
+            isCurrent,
+            durationMonths: num(e.durationMonths),
+            highlights: strList(e.highlights),
+            description: str(e.description)
+        };
+    })
+    .filter((e) => e.title || e.org);
+ 
+const cleanProjects = (list) => list
+    .map((p) => ({
+        name: str(p.name),
+        description: str(p.description),
+        techStack: strList(p.techStack),
+        link: str(p.link)
+    }))
+    .filter((p) => p.name);
+ 
+/* ---------------------------- controller ---------------------------- */
+ 
 const updateUser = async (req, res) => {
     const { userId } = req.user; // Set by auth middleware
-
-    const {
-        fullname,
-        email,
-        profile = {},
-        phone,
-        graduationYear,
-        education,
-        experience,
-        parsedSkills,
-        linkedin,
-        github,
-        portfolio
-    } = req.body;
-
-    const {
-        branch,
-        cgpa,
-        currentYear,
-        targetRoles,
-        employmentType,
-        workPreference,
-        customGoal
-    } = profile;
-
+    const body = req.body || {};
+ 
+    // Accept both nested ({ user: {...}, profile: {...} }) and flat payloads.
+    const u = { ...body, ...(body.user || {}) };
+    const p = { ...body, ...(body.profile || {}) };
+ 
     try {
         const foundUser = await user.findById(userId);
-
+ 
         if (!foundUser) {
-            return res.status(404).json({
-                message: "User not found"
-            });
+            return res.status(404).json({ message: 'User not found' });
         }
-
-        // Basic user information
-        if (fullname !== undefined) {
-            foundUser.fullname = fullname;
+ 
+        /* ---- basic user information ---- */
+        if (u.fullname !== undefined) foundUser.fullname = str(u.fullname);
+        if (u.email !== undefined && str(u.email)) foundUser.email = str(u.email);
+        if (u.phone !== undefined) foundUser.phone = str(u.phone);
+        if (u.graduationYear !== undefined) foundUser.graduationYear = num(u.graduationYear);
+        if (u.onboardingCompleted === true) foundUser.onboardingCompleted = true;
+ 
+        if (!foundUser.profile) foundUser.profile = {};
+ 
+        /* ---- profile lists ---- */
+        if (Array.isArray(p.education)) {
+            foundUser.profile.education = cleanEducation(p.education);
         }
-
-        if (email !== undefined) {
-            foundUser.email = email;
-        }
-
-        if (phone !== undefined) {
-            foundUser.phone = phone;
-        }
-
-        if (graduationYear !== undefined) {
-            foundUser.graduationYear = graduationYear;
-        }
-
-        // Make sure profile exists
-        if (!foundUser.profile) {
-            foundUser.profile = {};
-        }
-
-        // Education
-        if (Array.isArray(education)) {
-            foundUser.profile.education = education;
-        }
-
-        // Experience
-        if (Array.isArray(experience)) {
+ 
+        if (Array.isArray(p.experience)) {
+            const experience = cleanExperience(p.experience);
             foundUser.profile.experience = experience;
+            foundUser.profile.totalExperienceMonths = totalMonths(experience);
         }
-
-        // Skills
-        if (Array.isArray(parsedSkills)) {
-            foundUser.profile.parsedSkills = parsedSkills
-                .filter(skill => typeof skill === "string")
-                .map(skill => skill.trim().toLowerCase());
+ 
+        if (Array.isArray(p.projects)) {
+            foundUser.profile.projects = cleanProjects(p.projects);
         }
-
-        // Target roles
-        if (Array.isArray(targetRoles)) {
-            foundUser.profile.targetRoles = targetRoles;
+ 
+        if (Array.isArray(p.certifications)) {
+            foundUser.profile.certifications = strList(p.certifications);
         }
-
-        // Other profile fields
-        if (branch !== undefined) {
-            foundUser.profile.branch = branch;
+ 
+        if (Array.isArray(p.parsedSkills)) {
+            foundUser.profile.parsedSkills = [...new Set(strList(p.parsedSkills).map((s) => s.toLowerCase()))];
         }
-
-        if (cgpa !== undefined) {
-            foundUser.profile.cgpa = cgpa;
+ 
+        if (Array.isArray(p.targetRoles)) {
+            foundUser.profile.targetRoles = strList(p.targetRoles);
         }
-
-        if (currentYear !== undefined) {
-            foundUser.profile.currentYear = currentYear;
+ 
+        if (Array.isArray(p.workPreference)) {
+            foundUser.profile.workPreference = strList(p.workPreference);
         }
-
-        if (employmentType !== undefined) {
-            foundUser.profile.employmentType = employmentType;
-        }
-
-        if (Array.isArray(workPreference)) {
-            foundUser.profile.workPreference = workPreference;
-        }
-
-        if (customGoal !== undefined) {
-            foundUser.profile.customGoal = customGoal;
-        }
-
-        // Social / portfolio links
-        if (linkedin !== undefined) {
-            foundUser.profile.linkedin = linkedin;
-        }
-
-        if (github !== undefined) {
-            foundUser.profile.github = github;
-        }
-
-        if (portfolio !== undefined) {
-            foundUser.profile.portfolio = portfolio;
-        }
-
-        // Save changes
+ 
+        /* ---- simple profile fields ---- */
+        if (p.courseName !== undefined) foundUser.profile.courseName = str(p.courseName);
+        if (p.branch !== undefined) foundUser.profile.branch = str(p.branch);
+        if (p.cgpa !== undefined) foundUser.profile.cgpa = num(p.cgpa);
+        if (p.currentYear !== undefined) foundUser.profile.currentYear = num(p.currentYear);
+        if (p.employmentType !== undefined) foundUser.profile.employmentType = str(p.employmentType);
+        if (p.customGoal !== undefined) foundUser.profile.customGoal = str(p.customGoal);
+        if (p.summary !== undefined) foundUser.profile.summary = str(p.summary);
+ 
+        /* ---- links ---- */
+        if (p.linkedin !== undefined) foundUser.profile.linkedin = str(p.linkedin);
+        if (p.github !== undefined) foundUser.profile.github = str(p.github);
+        if (p.portfolio !== undefined) foundUser.profile.portfolio = str(p.portfolio);
+ 
         await foundUser.save();
-
+ 
         return res.status(200).json({
-            message: "Profile updated successfully",
-            user: foundUser
+            message: 'Profile updated successfully',
+            profile: buildProfileResponse(foundUser)
         });
-
     } catch (error) {
-        console.error("Error updating profile:", error);
-
-        return res.status(500).json({
-            message: "Internal server error"
-        });
+        console.error('Error updating profile:', error);
+ 
+        if (error.code === 11000) {
+            return res.status(409).json({ message: 'That email is already in use.' });
+        }
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ message: Object.values(error.errors)[0]?.message || 'Invalid profile data' });
+        }
+ 
+        return res.status(500).json({ message: 'Internal server error' });
     }
 };
 
@@ -568,7 +573,7 @@ const addResume = async (req, res) => {
     }
  
     try {
-        const foundUser = await User.findById(userId);
+        const foundUser = await user.findById(userId);
  
         if (!foundUser) {
             return res.status(404).json({ message: 'User not found' });
@@ -586,10 +591,7 @@ const addResume = async (req, res) => {
  
         return res.status(201).json({
             message: 'Resume added successfully',
-            resume: {
-                resumeFileUrl: foundUser.profile.resumeFileUrl,
-                resumePublicId: foundUser.profile.resumePublicId
-            }
+            profile: buildProfileResponse(foundUser)
         });
     } catch (error) {
         console.error('Error adding resume:', error);
@@ -649,7 +651,7 @@ const userinfo = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        res.status(200).json({ user: foundUser });
+        res.status(200).json(buildProfileResponse(foundUser));
     } catch (error) {
         console.error('Error fetching user info:', error);
         res.status(500).json({ message: 'Internal server error' });
@@ -664,7 +666,6 @@ module.exports = {
     updateUser,
     deleteUser,
     logoutUser,
-    updateUser,
     addResume,
     userinfo
 };

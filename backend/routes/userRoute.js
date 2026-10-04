@@ -1,7 +1,7 @@
 const expess = require("express");
 const router = expess.Router();
 const { loginUser, registerUser, sendOtp, verifyOtp, updateUser, userinfo } = require("../controller/UserController");
-const { userresumeupload } = require("../controller/parsingController");
+const { userresumeupload, deleteResume, getResumeLink } = require("../controller/parsingController");
 const upload = require("../middleware/upload-middleware");
 const authMiddleware = require("../middleware/auth-middleware");
 
@@ -17,10 +17,12 @@ router.post(
     authMiddleware,
     upload.fields([
         { name: "resume", maxCount: 1 },
-        { name: "file", maxCount: 1 },
+        { name: "file", maxCount: 1 }, 
         { name: "resumeFile", maxCount: 1 }
     ]),
     userresumeupload
 );
+router.delete("/resume", authMiddleware, deleteResume);
+router.get("/resume-link", authMiddleware, getResumeLink);
 
 module.exports = router;

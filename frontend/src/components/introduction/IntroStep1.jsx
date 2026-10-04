@@ -5,6 +5,7 @@ export default function IntroStep1({
 }) {
   const handleContinue = () => {
     if (
+      !data.courseName ||
       !data.branch ||
       !data.graduationYear ||
       !data.cgpa ||
@@ -30,10 +31,24 @@ export default function IntroStep1({
       </div>
 
       <div className="mt-8 space-y-5">
-        {/* Branch */}
+        {/* Course and major */}
         <div>
           <label className="text-xs font-medium text-slate-700">
-            Branch / Major
+            Course name
+          </label>
+
+          <input
+            type="text"
+            value={data.courseName}
+            onChange={(e) => updateProfile({ courseName: e.target.value })}
+            placeholder="e.g. Bachelor of Technology"
+            className="mt-2 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-600/10"
+          />
+        </div>
+
+        <div>
+          <label className="text-xs font-medium text-slate-700">
+            Major / Branch
           </label>
 
           <input
@@ -128,6 +143,7 @@ export default function IntroStep1({
           type="button"
           onClick={handleContinue}
           disabled={
+            !data.courseName ||
             !data.branch ||
             !data.graduationYear ||
             !data.cgpa ||

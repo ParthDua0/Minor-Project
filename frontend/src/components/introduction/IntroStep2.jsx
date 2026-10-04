@@ -23,7 +23,9 @@ export default function IntroStep2({
   const [uploading, setUploading] = useState(false);
 
   const [parsedData, setParsedData] = useState(
-    data.extractedData || null
+    data.extractedData
+      ? { ...data.extractedData, parsedSkills: data.extractedData.parsedSkills || data.extractedData.skills || [] }
+      : null
   );
 
   useEffect(() => {
@@ -74,11 +76,16 @@ export default function IntroStep2({
         );
       }
 
-      setParsedData(extracted);
+      const normalisedExtracted = {
+        ...extracted,
+        parsedSkills: extracted.parsedSkills || extracted.skills || [],
+      };
+
+      setParsedData(normalisedExtracted);
 
       updateProfile({
         resume: file,
-        extractedData: extracted,
+        extractedData: normalisedExtracted,
       });
     } catch (error) {
       console.error("Resume upload failed:", error);
@@ -163,6 +170,8 @@ export default function IntroStep2({
       ...(parsedData?.education || []),
       {
         degree: "",
+        branch: "",
+        institute: "",
         year: "",
         cgpa: "",
       },
@@ -435,6 +444,18 @@ export default function IntroStep2({
                               value
                             )
                           }
+                        />
+
+                        <FormField
+                          label="Major / Branch"
+                          value={education.branch}
+                          onChange={(value) => updateEducation(index, "branch", value)}
+                        />
+
+                        <FormField
+                          label="Institution"
+                          value={education.institute}
+                          onChange={(value) => updateEducation(index, "institute", value)}
                         />
 
                         <FormField

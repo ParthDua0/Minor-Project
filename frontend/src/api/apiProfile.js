@@ -24,9 +24,24 @@ function getAuthHeaders() {
 
 export async function getProfileData() {
   const response = await getUserInfo();
+  let cloudinaryResumeUrl = "";
 
+  if (response?.resume?.uploaded) {
+    try {
+      const linkResponse = await profileApi.get("/resume-link", {
+        headers: getAuthHeaders(),
+      });
+      cloudinaryResumeUrl = linkResponse.data?.url || "";
+    } catch (error) {
+      // Keep the saved URL as a fallback if Cloudinary is temporarily unavailable.
+      console.warn("Could not refresh the Cloudinary resume link", error);
+    }
+  }
+
+  // The backend returns the normalised ProfileResponse shape.  Keep the
+  // mapping here only for form-specific defaults and UI-only fields.
   const user = response?.user || {};
-  const profile = user?.profile || {};
+  const profile = response || {};
 
   return {
     user: {
@@ -38,6 +53,7 @@ export async function getProfileData() {
       graduationYear: user.graduationYear || "",
     },
 
+    courseName: profile.courseName || "",
     branch: profile.branch || "",
     cgpa: profile.cgpa ?? "",
     currentYear: profile.currentYear ?? "",
@@ -54,11 +70,11 @@ export async function getProfileData() {
       ? profile.workPreference
       : [],
 
-    resume: profile.resumeFileUrl
+    resume: profile.resume?.uploaded
       ? {
           uploaded: true,
-          url: profile.resumeFileUrl,
-          fileName: "Uploaded resume",
+          url: cloudinaryResumeUrl || profile.resume.url,
+          fileName: profile.resume.fileName || "Uploaded resume",
         }
       : {
           uploaded: false,
@@ -72,17 +88,26 @@ export async function getProfileData() {
 
     experience: Array.isArray(profile.experience)
       ? profile.experience.map((item, index) => ({
-          id: item._id || `${Date.now()}-${index}`,
+          ...item,
+          id: item._id || item.id || `experience-${index}`,
           title: item.title || "",
           org: item.org || "",
           durationMonths: item.durationMonths ?? "",
           description: item.description || "",
+          highlights: Array.isArray(item.highlights) ? item.highlights : [],
         }))
       : [],
 
     parsedSkills: Array.isArray(profile.parsedSkills)
       ? profile.parsedSkills
       : [],
+
+    summary: profile.summary || "",
+    projects: Array.isArray(profile.projects) ? profile.projects : [],
+    certifications: Array.isArray(profile.certifications)
+      ? profile.certifications
+      : [],
+    totalExperienceMonths: profile.totalExperienceMonths ?? 0,
 
     linkedin: profile.linkedin || "",
     github: profile.github || "",
@@ -123,7 +148,7 @@ function calculateProfileCompletion(user, profile) {
     profile.branch,
     profile.cgpa,
     profile.currentYear,
-    profile.resumeFileUrl,
+    profile.resume?.url,
     targetRoles.length > 0,
     profile.customGoal,
     parsedSkills.length > 0,
@@ -153,6 +178,7 @@ export async function updateProfile(profileData) {
     role: profileData.user?.role || "student",
 
     profile: {
+      courseName: profileData.courseName?.trim() || "",
       branch: profileData.branch || "",
 
       cgpa:
@@ -184,6 +210,8 @@ export async function updateProfile(profileData) {
 
       customGoal:
         profileData.customGoal?.trim() || "",
+
+      summary: profileData.summary?.trim() || "",
     },
 
     education: Array.isArray(profileData.education)
@@ -192,15 +220,10 @@ export async function updateProfile(profileData) {
           branch: item.branch || "",
           institute:
             item.institute || item.institution || "",
-          year: item.year
-            ? Number(item.year)
-            : undefined,
-          cgpa:
-            item.cgpa !== "" &&
-            item.cgpa !== null &&
-            item.cgpa !== undefined
-              ? Number(item.cgpa)
-              : undefined,
+          startYear: item.startYear !== "" && item.startYear != null ? Number(item.startYear) : undefined,
+          year: item.year !== "" && item.year != null ? Number(item.year) : undefined,
+          cgpa: item.cgpa !== "" && item.cgpa != null ? Number(item.cgpa) : undefined,
+          percentage: item.percentage !== "" && item.percentage != null ? Number(item.percentage) : undefined,
         }))
       : [],
 
@@ -208,18 +231,35 @@ export async function updateProfile(profileData) {
       ? profileData.experience.map((item) => ({
           title: item.title || "",
           org: item.org || "",
+          startDate: item.startDate || undefined,
+          endDate: item.isCurrent ? undefined : item.endDate || undefined,
+          isCurrent: Boolean(item.isCurrent),
           durationMonths:
             item.durationMonths !== "" &&
             item.durationMonths !== null &&
             item.durationMonths !== undefined
               ? Number(item.durationMonths)
-              : 0,
+              : undefined,
+          highlights: Array.isArray(item.highlights) ? item.highlights : [],
           description: item.description || "",
         }))
       : [],
 
     parsedSkills: Array.isArray(profileData.parsedSkills)
       ? profileData.parsedSkills
+      : [],
+
+    projects: Array.isArray(profileData.projects)
+      ? profileData.projects.map((item) => ({
+          name: item.name || "",
+          description: item.description || "",
+          techStack: Array.isArray(item.techStack) ? item.techStack : [],
+          link: item.link || "",
+        }))
+      : [],
+
+    certifications: Array.isArray(profileData.certifications)
+      ? profileData.certifications
       : [],
 
     linkedin: profileData.linkedin || "",
@@ -259,6 +299,14 @@ export async function uploadResume(file) {
       },
     }
   );
+
+  return response.data;
+}
+
+export async function deleteResume() {
+  const response = await profileApi.delete("/resume", {
+    headers: getAuthHeaders(),
+  });
 
   return response.data;
 }
