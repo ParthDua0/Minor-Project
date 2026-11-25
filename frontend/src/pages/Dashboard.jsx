@@ -16,9 +16,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { getDashboardData } from "../api/apiDashboard";
 import AppLayout from "../components/layout/AppLayout";
 
-/* -------------------------------------------------------------------------- */
-/* READINESS CARD                                                             */
-/* -------------------------------------------------------------------------- */
+/* READINESS CARD */
 
 function ReadinessCard({ readiness }) {
   if (!readiness) {

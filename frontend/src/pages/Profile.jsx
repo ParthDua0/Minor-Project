@@ -1,5 +1,3 @@
-// src/pages/Profile.jsx
-
 import { useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
