@@ -93,8 +93,6 @@ const sendOtp = async (req, res) => {
       await newUser.save();
     }
 
-    // Development only — remove in production
-    console.log(`OTP for ${normalizedEmail}: ${otp}`);
 
 
     await sendVerificationCode(otp, normalizedEmail, res);
@@ -365,7 +363,6 @@ const verifyOtp = async (req, res) => {
 
     foundUser.otpVerified = true;
 
-    // Clear OTP after successful verification
     foundUser.otp = undefined;
     foundUser.otpExpiry = undefined;
 
@@ -471,7 +468,7 @@ const cleanProjects = (list) => list
     }))
     .filter((p) => p.name);
  
-/* ---------------------------- controller ---------------------------- */
+
  
 const updateUser = async (req, res) => {
     const { userId } = req.user; // Set by auth middleware

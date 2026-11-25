@@ -27,7 +27,7 @@ const userresumeupload = async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // 1. Extract text -> 2. parse into sections -> 3. clean / normalise
+       
         const resumeText = await extractResumeText(resumeFile);
         if (resumeText.length < 50) {
             return res.status(422).json({
@@ -39,8 +39,8 @@ const userresumeupload = async (req, res) => {
 
         const uploadedResume = await cloudinary.uploader.upload(resumeFile.path, {
             folder: 'student-resumes',
-            resource_type: 'raw',
-            use_filename: true,
+            resource_type: 'raw',   
+            use_filename: true, 
             unique_filename: true
         });
 

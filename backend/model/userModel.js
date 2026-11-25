@@ -85,7 +85,6 @@ const userSchema = new mongoose.Schema({
     phone: { type: String, trim: true },
 
     profile: {
-        // Academic / preference fields edited on the profile page
         courseName: { type: String, trim: true },
         branch: { type: String, trim: true },
         cgpa: { type: Number, min: 0, max: 10 },

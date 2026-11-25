@@ -1,14 +1,10 @@
-/**
- * Takes the raw output of parseResume() and turns it into clean, schema-ready data:
- * normalises text, converts dates, computes durations, drops junk entries and
- * writes a short human-readable note for every job.
- */
+
 
 const MONTH_INDEX = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const HIGHER_DEGREE_RE = /b\.?\s?tech|m\.?\s?tech|bachelor|master|b\.?\s?sc|m\.?\s?sc|bca|mca|mba|bba|ph\.?d/i;
 
-/* ---------------------------- helpers ---------------------------- */
+/* helpers  */
 
 const clean = (value) => String(value ?? '')
     .replace(/[\u200b\u00a0]/g, ' ')
@@ -37,7 +33,7 @@ const tokenToDate = (token, isEnd) => {
     let month;
     if (word) month = MONTH_INDEX[word[0]];
     else if (numeric) month = Number(numeric[1]) - 1;
-    else month = isEnd ? 11 : 0; // year-only: Jan for start, Dec for end
+    else month = isEnd ? 11 : 0; 
 
     if (month === undefined || month < 0 || month > 11) return null;
     return new Date(Date.UTC(Number(yearMatch[0]), month, 1));
@@ -66,7 +62,7 @@ const cleanPhone = (raw) => {
     return digits;
 };
 
-/* --------------------------- experience --------------------------- */
+/* experience  */
 
 const buildNote = ({ title, org, start, end, isCurrent, durationMonths, highlights }) => {
     const verb = isCurrent ? 'Working' : 'Worked';
@@ -130,7 +126,7 @@ const totalMonths = (experience) => {
     return cur ? total + cur[1] - cur[0] + 1 : 0;
 };
 
-/* ---------------------------- education ---------------------------- */
+/* education  */
 
 const cleanEducation = (entry) => {
     const degree = clean(entry.degree);

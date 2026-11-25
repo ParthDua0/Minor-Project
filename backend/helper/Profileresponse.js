@@ -30,22 +30,22 @@ const buildProfileResponse = (foundUser) => {
         workPreference: p.workPreference || [],
         customGoal: p.customGoal,
 
-        summary: p.summary,                                   // NEW
-        linkedin: p.linkedin,                                 // NEW
-        github: p.github,                                     // NEW
-        portfolio: p.portfolio,                               // NEW
+        summary: p.summary,                                  
+        linkedin: p.linkedin,                                 
+        github: p.github,                                     
+        portfolio: p.portfolio,                               
         education: p.education || [],
         experience: p.experience || [],
-        projects: p.projects || [],                           // NEW
-        certifications: p.certifications || [],               // NEW
+        projects: p.projects || [],                           
+        certifications: p.certifications || [],               
         parsedSkills: p.parsedSkills || [],
-        totalExperienceMonths: p.totalExperienceMonths || 0,  // NEW
+        totalExperienceMonths: p.totalExperienceMonths || 0,  
 
         resume: {
             uploaded: Boolean(p.resumeFileUrl),
-            url: p.resumeFileUrl,                             // NEW -> "View resume" link
+            url: p.resumeFileUrl,                             
             fileName: p.resumeFileName,
-            uploadedAt: p.resumeParsedAt                      // NEW
+            uploadedAt: p.resumeParsedAt                      
         },
         profileCompletion
     };

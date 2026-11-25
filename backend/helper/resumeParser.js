@@ -1,9 +1,7 @@
 const fs = require('fs/promises');
 const path = require('path');
 
-/* ------------------------------------------------------------------ */
-/*  Constants                                                          */
-/* ------------------------------------------------------------------ */
+
 
 const SECTION_ALIASES = {
     summary: ['summary', 'professional summary', 'profile', 'objective', 'career objective', 'about me', 'about'],
@@ -53,9 +51,7 @@ const ORG_RE = /\b(university|college|institute|school|pvt|private|ltd|limited|i
 const DEGREE_RE = /\b(?:b\.?\s?tech|m\.?\s?tech|b\.?\s?sc|m\.?\s?sc|b\.?\s?c\.?a|m\.?\s?c\.?a|b\.?\s?com|m\.?\s?com|mba|bba|ph\.?d|bachelor(?:'s)?|master(?:'s)?|diploma|higher secondary|senior secondary|secondary|intermediate|high school|matriculation|class (?:x|xii|10|12)|(?:10|12)th|xii)\b/i;
 const INSTITUTE_RE = /\b(?:university|college|institute|institution|school|academy|iit|nit|iiit|polytechnic|vidyalaya|vidyapeeth)\b/i;
 
-/* ------------------------------------------------------------------ */
-/*  Text extraction                                                    */
-/* ------------------------------------------------------------------ */
+
 
 const normalizeText = (text) => text
     .replace(/\r\n?/g, '\n')
@@ -85,7 +81,7 @@ const extractResumeText = async (file) => {
     if (file.mimetype === 'application/pdf' || ext === '.pdf') {
         const pdfParser = requireOptional('pdf-parse');
         if (!pdfParser) {
-            throw new Error('PDF parsing requires the pdf-parse package. Run npm install pdf-parse in backend.');
+            throw new Error('PDF parsing requires the pdf-parse package.');
         }
 
         const buffer = await fs.readFile(file.path);
@@ -119,9 +115,9 @@ const extractResumeText = async (file) => {
     throw new Error('Unsupported resume format. Please upload a PDF, DOCX, or TXT file.');
 };
 
-/* ------------------------------------------------------------------ */
-/*  Section splitting                                                  */
-/* ------------------------------------------------------------------ */
+
+/*  Section splitting */
+
 
 const detectHeading = (line) => {
     if (line.length > 45) return null;
@@ -133,7 +129,7 @@ const detectHeading = (line) => {
         .toLowerCase();
     const key = HEADING_LOOKUP.get(clean) || HEADING_LOOKUP.get(clean.replace(/&/g, 'and'));
     if (key) return key;
-    // e.g. "Freelance Projects", "Projects & Open Source"
+ 
     if (/^(?:[a-z]+ ){0,2}projects$|^projects (?:and|&) [a-z ]+$/.test(clean)) return 'projects';
     return null;
 };
@@ -146,7 +142,7 @@ const splitSections = (text) => {
         const line = raw.trim();
         if (!line) continue;
         let key = detectHeading(line);
-        // A lone "Tech Stack" / "Technologies" line inside a project or job is content, not a new section.
+
         if (key === 'skills' && ['projects', 'experience'].includes(current) && /^tech(?:nologies| stack)\s*:?$/i.test(line)) key = null;
         if (key) {
             current = key;
@@ -161,9 +157,9 @@ const splitSections = (text) => {
 const isBullet = (line) => BULLET_RE.test(line);
 const stripBullet = (line) => line.replace(BULLET_RE, '').trim();
 
-/* ------------------------------------------------------------------ */
-/*  Contact info                                                       */
-/* ------------------------------------------------------------------ */
+
+/*  Contact info */
+
 
 const withProtocol = (url) => (url && !/^https?:\/\//i.test(url) ? `https://${url}` : url);
 const trimUrl = (url) => url && url.replace(/[).,;|]+$/, '');
@@ -200,9 +196,9 @@ const extractName = (headerLines) => headerLines.slice(0, 6).find((line) =>
     !ROLE_RE.test(line)
 );
 
-/* ------------------------------------------------------------------ */
-/*  Experience                                                         */
-/* ------------------------------------------------------------------ */
+
+/*  Experience */
+
 
 const HEADER_SPLIT_RE = /\s*[|•·]\s*|\s+[-–—@]\s+|,\s+|\s+at\s+/i;
 
@@ -276,9 +272,9 @@ const parseExperience = (lines) => {
     });
 };
 
-/* ------------------------------------------------------------------ */
-/*  Education                                                          */
-/* ------------------------------------------------------------------ */
+
+/*  Education  */
+
 
 const CGPA_RE = /\b(?:c\.?g\.?p\.?a|g\.?p\.?a)\b\s*[:\-]?\s*(\d+(?:\.\d+)?)|(\d(?:\.\d+)?)\s*\/\s*10\b/i;
 const PERCENT_RE = /(\d{2}(?:\.\d+)?)\s*%|(?:percentage|marks|score)\s*[:\-]?\s*(\d{2}(?:\.\d+)?)/i;
@@ -339,9 +335,8 @@ const parseEducation = (lines) => {
     });
 };
 
-/* ------------------------------------------------------------------ */
-/*  Skills, projects, certifications                                   */
-/* ------------------------------------------------------------------ */
+
+/*  Skills, projects, certifications */
 
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const KNOWN_SKILL_RES = KNOWN_SKILLS.map((skill) => [
@@ -450,9 +445,8 @@ const parseProjects = (lines) => {
 
 const parseCertifications = (lines) => [...new Set(lines.map(stripBullet).filter((l) => l.length > 2 && l.length <= 150))];
 
-/* ------------------------------------------------------------------ */
-/*  Public API                                                         */
-/* ------------------------------------------------------------------ */
+/*  Public API     */
+
 
 const parseResume = (text) => {
     const sections = splitSections(text);
