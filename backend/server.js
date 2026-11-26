@@ -5,6 +5,7 @@ const connectDB = require('./database/dbconnection');
 dotenv.config();
 const userRoutes = require('./routes/userRoute');
 const User = require('./model/userModel');
+const cors = require('cors');
 
 
 
@@ -35,9 +36,11 @@ connectDB().then((connected) => {
 });
 // Middleware
 app.use(express.json());
+app.use(cors({ origin: process.env.CLIENT_URL || true, credentials: true }));
 app.use('/api/users', userRoutes);
 
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
-});
+}); 
+ 

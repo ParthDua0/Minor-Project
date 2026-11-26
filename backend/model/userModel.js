@@ -65,6 +65,8 @@ const userSchema = new mongoose.Schema({
         type: Date,
         select: false,
     },
+    resetOtp: { type: String, select: false },
+    resetOtpExpiry: { type: Date, select: false },
     otpVerified: {
         type: Boolean,
         default: false
@@ -83,6 +85,10 @@ const userSchema = new mongoose.Schema({
     },
 
     phone: { type: String, trim: true },
+    recruiterProfile: {
+        company: { type: String, trim: true },
+        designation: { type: String, trim: true }
+    },
 
     profile: {
         courseName: { type: String, trim: true },

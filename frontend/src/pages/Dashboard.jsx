@@ -295,7 +295,7 @@ function SkillGapCard({ skillGaps = [] }) {
                     {gap >= 40 && (
                       <span className="text-[9px] font-medium text-orange-500">
                         High priority
-                      </span>
+                      </span> 
                     )}
                   </div>
                 </div>

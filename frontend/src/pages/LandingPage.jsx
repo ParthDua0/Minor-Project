@@ -322,7 +322,10 @@ function LandingPage() {
 
       console.log("Onboarding complete:", onboardingComplete);
 
-      if (onboardingComplete) {
+      if (user?.role === "recruiter") {
+        closeDrawer();
+        navigate("/recruiter/jobs");
+      } else if (onboardingComplete) {
         closeDrawer();
         navigate("/dashboard");
       } else {
@@ -453,6 +456,8 @@ function LandingPage() {
         role,
         graduationYear:
           role === "student" ? Number(signupForm.graduationYear) : undefined,
+        company: role === "recruiter" ? signupForm.company.trim() : undefined,
+        designation: role === "recruiter" ? signupForm.designation.trim() : undefined,
       };
 
       const data = await registerUser(payload);
@@ -697,6 +702,10 @@ function LandingPage() {
                 error={loginErrors.password}
                 placeholder="Enter your password"
               />
+
+              <button type="button" onClick={() => navigate('/forgot-password')} className="-mt-3 block text-xs font-medium text-teal-700 hover:text-teal-800">
+                Forgot password?
+              </button>
 
               {loginApiError && (
                 <ErrorMessage message={loginApiError} />

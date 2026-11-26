@@ -1,7 +1,17 @@
 import { getUserInfo } from "./apiAuth";
+import { getJobs } from "./apiCareer";
 
 export async function getDashboardData() {
   const response = await getUserInfo();
+  let jobMatches = [];
+  try {
+    const jobData = await getJobs();
+    jobMatches = jobData.jobs || [];
+  } catch (error) {
+    // A recruiter account or an unavailable jobs service should not prevent
+    // the profile dashboard from loading.
+    console.warn('Job matches are unavailable', error);
+  }
 
   const user = response?.user || {};
   const profile = response || {};
@@ -75,16 +85,22 @@ export async function getDashboardData() {
       profileCompletion,
       verifiedSkills: 0,
       totalSkills: parsedSkills.length,
-      matchedJobs: 0,
+      matchedJobs: jobMatches.filter((job) => job.match?.isFit).length,
       activeApplications: 0,
     },
 
     /*
      * These will be connected to real backend APIs later.
      */
-    readiness: null,
+    readiness: parsedSkills.length ? { score: Math.round((profileCompletion * 0.4) + (Math.min(parsedSkills.length, 10) * 6)), change: 0 } : null,
     skillGaps: [],
-    matchedJobs: [],
+    matchedJobs: jobMatches.slice(0, 4).map((job) => ({
+      role: job.title,
+      company: (job.company || '?').slice(0, 1).toUpperCase(),
+      companyName: job.company,
+      location: job.location || 'Remote / flexible',
+      match: job.match?.score || 0,
+    })),
 
     nextStep: {
       title:

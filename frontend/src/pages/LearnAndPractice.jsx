@@ -1,6 +1,7 @@
 // src/pages/LearnAndPractice.jsx
 
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   ArrowRight,
   BookOpen,
@@ -745,22 +746,14 @@ export default function LearnAndPractice() {
               </p>
             </div>
 
-            {/* Streak badge */}
-            <div className="flex w-fit items-center gap-2 rounded-lg border border-orange-100 bg-orange-50 px-3 py-2">
-              <Flame
-                size={15}
-                className="text-orange-500"
-                fill="currentColor"
-              />
-
-              <div>
-                <p className="text-[9px] font-medium text-orange-500">
-                  Current streak
-                </p>
-
-                <p className="text-xs font-semibold text-orange-700">
-                  {data.stats.dayStreak} days
-                </p>
+            <div className="flex w-fit items-center gap-2">
+              <Link to="/compiler" className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800">
+                <Code2 size={15} /> Open compiler
+              </Link>
+              {/* Streak badge */}
+              <div className="flex items-center gap-2 rounded-lg border border-orange-100 bg-orange-50 px-3 py-2">
+                <Flame size={15} className="text-orange-500" fill="currentColor" />
+                <div><p className="text-[9px] font-medium text-orange-500">Current streak</p><p className="text-xs font-semibold text-orange-700">{data.stats.dayStreak} days</p></div>
               </div>
             </div>
           </div>

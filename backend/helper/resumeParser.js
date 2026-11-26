@@ -24,7 +24,12 @@ const KNOWN_SKILLS = [
     'c++', 'c#', 'php', 'django', 'flask', 'spring boot', 'git', 'github', 'docker', 'kubernetes', 'aws',
     'azure', 'gcp', 'linux', 'nginx', 'jenkins', 'ci/cd', 'rest api', 'graphql', 'websocket', 'socket.io',
     'jest', 'postman', 'figma', 'jwt', 'npm', 'webpack', 'vite', 'cloudinary', 'machine learning',
-    'data analysis', 'pandas', 'numpy', 'tensorflow', 'flutter', 'excel', 'power bi'
+    'data analysis', 'pandas', 'numpy', 'tensorflow', 'flutter', 'excel', 'power bi',
+    'tableau', 'r', 'scikit-learn', 'pytorch', 'computer vision', 'nlp', 'data structures',
+    'algorithms', 'oop', 'operating systems', 'dbms', 'communication', 'problem solving',
+    'leadership', 'agile', 'scrum', 'jira', 'salesforce', 'sap', 'ui/ux', 'canva',
+    'digital marketing', 'seo', 'content writing', 'accounting', 'finance', 'autocad',
+    'solidworks', 'matlab', 'embedded systems', 'arduino', 'networking', 'cybersecurity'
 ];
 const AMBIGUOUS_SKILLS = new Set(['express', 'excel']);
 
@@ -35,7 +40,9 @@ const SKILL_ALIASES = {
     tailwindcss: 'tailwind', 'tailwind css': 'tailwind', html5: 'html', css3: 'css', ml: 'machine learning',
     'restful api': 'rest api', 'restful apis': 'rest api', 'rest apis': 'rest api', k8s: 'kubernetes',
     'amazon web services': 'aws', 'google cloud': 'gcp', 'ms excel': 'excel', 'microsoft excel': 'excel',
-    socketio: 'socket.io'
+    socketio: 'socket.io', 'scikit learn': 'scikit-learn', sklearn: 'scikit-learn',
+    'natural language processing': 'nlp', 'user experience': 'ui/ux', ux: 'ui/ux',
+    'search engine optimization': 'seo', 'object oriented programming': 'oop'
 };
 
 const MONTH = '(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)';

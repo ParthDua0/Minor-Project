@@ -20,6 +20,9 @@ export async function loginUser({ email, password }) {
   return response.data;
 }
 
+export const requestPasswordReset = (email) => authApi.post('/forgot-password', { email }).then((response) => response.data);
+export const resetPassword = ({ email, code, password, confirmPassword }) => authApi.post('/reset-password', { email, code, password, confirmPassword }).then((response) => response.data);
+
 // SEND OTP
 export async function sendOtp(email) {
   const response = await authApi.post("/send-otp", {
@@ -48,6 +51,8 @@ export async function registerUser({
   phone,
   role,
   graduationYear,
+  company,
+  designation,
 }) {
   const response = await authApi.post("/register", {
     fullname,
@@ -57,6 +62,8 @@ export async function registerUser({
     phone,
     role,
     graduationYear,
+    company,
+    designation,
   });
 
   return response.data;

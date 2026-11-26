@@ -146,24 +146,9 @@ const getResumeLink = async (req, res) => {
         const savedUrl = foundUser.profile?.resumeFileUrl;
         if (!publicId && !savedUrl) return res.status(404).json({ error: 'No resume uploaded' });
 
-        let url = savedUrl;
-        if (publicId) {
-            const asset = await cloudinary.api.resource(publicId, {
-                resource_type: 'raw',
-                type: 'upload'
-            });
-            const extension = path.extname(publicId).slice(1) || asset.format || 'pdf';
-            const idWithoutExtension = extension
-                ? publicId.slice(0, -(extension.length + 1))
-                : publicId;
-
-            url = cloudinary.utils.private_download_url(idWithoutExtension, extension, {
-                resource_type: 'raw',
-                type: 'upload',
-                expires_at: Math.floor(Date.now() / 1000) + 60 * 60
-            });
-
-        }
+        // secure_url is a browser-renderable URL. private_download_url sets a
+        // download disposition, which is why the old Preview action could not work.
+        const url = savedUrl;
 
         return res.status(200).json({ url, publicId });
     } catch (error) {

@@ -49,6 +49,51 @@ const loginUser = async (req, res) => {
     }
 };
 
+const requestPasswordReset = async (req, res) => {
+    try {
+        const email = normalizeEmail(req.body.email);
+        if (!email) return res.status(400).json({ message: 'Email is required' });
+        const foundUser = await user.findOne({ email }).select('+resetOtp +resetOtpExpiry');
+        // Keep the response neutral so this endpoint cannot be used to enumerate accounts.
+        if (!foundUser) return res.json({ message: 'If an account exists, a reset code has been sent.' });
+        const code = String(Math.floor(100000 + Math.random() * 900000));
+        foundUser.resetOtp = code;
+        foundUser.resetOtpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+        await foundUser.save();
+        await sendEmail({
+            email,
+            subject: 'Reset your PlaceReady password',
+            message: `<p>Use this code to reset your password:</p><h1 style="letter-spacing:6px">${code}</h1><p>This code expires in 10 minutes. Do not share it.</p>`
+        });
+        return res.json({ message: 'If an account exists, a reset code has been sent.' });
+    } catch (error) {
+        console.error('Password reset request error:', error);
+        return res.status(500).json({ message: 'Unable to send reset code' });
+    }
+};
+
+const resetPassword = async (req, res) => {
+    try {
+        const email = normalizeEmail(req.body.email);
+        const { code, password, confirmPassword } = req.body;
+        if (!email || !code || !password || !confirmPassword) return res.status(400).json({ message: 'Email, code and both password fields are required' });
+        if (password !== confirmPassword) return res.status(400).json({ message: 'Passwords do not match' });
+        if (password.length < 8) return res.status(400).json({ message: 'Password must have at least 8 characters' });
+        const foundUser = await user.findOne({ email }).select('+password +resetOtp +resetOtpExpiry');
+        if (!foundUser || !foundUser.resetOtp || foundUser.resetOtp !== String(code) || !foundUser.resetOtpExpiry || foundUser.resetOtpExpiry < new Date()) {
+            return res.status(400).json({ message: 'The reset code is invalid or has expired' });
+        }
+        foundUser.password = await bcrypt.hash(password, 10);
+        foundUser.resetOtp = undefined;
+        foundUser.resetOtpExpiry = undefined;
+        await foundUser.save();
+        return res.json({ message: 'Password reset successfully. You can now sign in.' });
+    } catch (error) {
+        console.error('Password reset error:', error);
+        return res.status(500).json({ message: 'Unable to reset password' });
+    }
+};
+
 const sendOtp = async (req, res) => {
   const { email } = req.body;
 
@@ -384,7 +429,7 @@ const verifyOtp = async (req, res) => {
 };
 
 const registerUser = async (req, res) => {
-    const { fullname, email, password, confirm_password, phone, role ,graduationYear } = req.body;
+    const { fullname, email, password, confirm_password, phone, role ,graduationYear, company, designation } = req.body;
 
     try {
         const normalizedEmail = normalizeEmail(email);
@@ -409,8 +454,9 @@ const registerUser = async (req, res) => {
         foundUser.fullname = fullname;
         foundUser.password = hashedPassword;
         foundUser.phone = phone;
-        foundUser.role = role;
+        foundUser.role = ['student', 'recruiter'].includes(role) ? role : 'student';
         foundUser.graduationYear = graduationYear;
+        if (foundUser.role === 'recruiter') foundUser.recruiterProfile = { company, designation };
         foundUser.verifiyed = true; // Mark user as verified after registration
         await foundUser.save();
 
@@ -657,6 +703,8 @@ const userinfo = async (req, res) => {
 
 module.exports = {
     loginUser,
+    requestPasswordReset,
+    resetPassword,
     sendOtp,
     verifyOtp,
     registerUser,
