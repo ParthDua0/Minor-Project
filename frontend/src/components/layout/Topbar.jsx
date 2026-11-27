@@ -82,16 +82,6 @@ export default function Topbar({
 
       {/* Right */}
       <div className="flex shrink-0 items-center gap-2 sm:gap-4">
-        <button
-          type="button"
-          className="relative rounded-lg p-2 text-slate-500 transition hover:bg-slate-50"
-          aria-label="Activity"
-        >
-          <Activity size={19} />
-
-          <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-teal-500" />
-        </button>
-
         <div className="hidden h-6 w-px bg-slate-200 sm:block" />
 
         {/* User */}

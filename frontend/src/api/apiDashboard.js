@@ -1,16 +1,23 @@
 import { getUserInfo } from "./apiAuth";
-import { getJobs } from "./apiCareer";
+import { getAssessments, getJobs } from "./apiCareer";
 
 export async function getDashboardData() {
   const response = await getUserInfo();
+
   let jobMatches = [];
   try {
     const jobData = await getJobs();
     jobMatches = jobData.jobs || [];
   } catch (error) {
-    // A recruiter account or an unavailable jobs service should not prevent
-    // the profile dashboard from loading.
-    console.warn('Job matches are unavailable', error);
+    console.warn("Job matches are unavailable", error);
+  }
+
+  let assessments = [];
+  try {
+    const assessmentData = await getAssessments();
+    assessments = assessmentData.assessments || [];
+  } catch (error) {
+    console.warn("Assessments are unavailable", error);
   }
 
   const user = response?.user || {};
@@ -32,10 +39,43 @@ export async function getDashboardData() {
     ? profile.targetRoles
     : [];
 
-  /*
-   * These values are not available from /user-info yet.
-   * Do NOT use fake/mock values here.
-   */
+  // Map assessments by lowercase skill name
+  const assessmentMap = new Map(
+    assessments.map((a) => [a.skill.toLowerCase(), a])
+  );
+
+  // Merge resume skills and any custom-assessed skills
+  const allUniqueSkills = [
+    ...new Set([
+      ...parsedSkills.map((s) => s.trim()),
+      ...assessments.map((a) => a.skill.trim()),
+    ]),
+  ];
+
+  // Unverified = not attempted yet OR score < 70%
+  const skillGaps = allUniqueSkills
+    .map((skill) => {
+      const record = assessmentMap.get(skill.toLowerCase());
+      const current = record ? record.score : 0;
+      const attempted = Boolean(record);
+
+      return {
+        name: skill,
+        current,
+        required: 70,
+        attempted,
+        level: record?.level || "Unverified",
+      };
+    })
+    .filter((item) => !item.attempted || item.current < 70)
+    // Sort: attempted (< 70%) first by lowest score, then unattempted
+    .sort((a, b) => {
+      if (a.attempted !== b.attempted) return a.attempted ? -1 : 1;
+      return a.current - b.current;
+    });
+
+  const verifiedCount = allUniqueSkills.length - skillGaps.length;
+
   const profileFields = [
     user.fullname,
     user.email,
@@ -51,9 +91,9 @@ export async function getDashboardData() {
 
   const completedFields = profileFields.filter(Boolean).length;
 
-  const profileCompletion = response?.profileCompletion ?? Math.round(
-    (completedFields / profileFields.length) * 100
-  );
+  const profileCompletion =
+    response?.profileCompletion ??
+    Math.round((completedFields / profileFields.length) * 100);
 
   return {
     user: {
@@ -83,22 +123,28 @@ export async function getDashboardData() {
 
     stats: {
       profileCompletion,
-      verifiedSkills: 0,
+      verifiedSkills: verifiedCount,
       totalSkills: parsedSkills.length,
       matchedJobs: jobMatches.filter((job) => job.match?.isFit).length,
       activeApplications: 0,
     },
 
-    /*
-     * These will be connected to real backend APIs later.
-     */
-    readiness: parsedSkills.length ? { score: Math.round((profileCompletion * 0.4) + (Math.min(parsedSkills.length, 10) * 6)), change: 0 } : null,
-    skillGaps: [],
+    readiness: parsedSkills.length
+      ? {
+          score: Math.round(
+            profileCompletion * 0.4 + Math.min(parsedSkills.length, 10) * 6
+          ),
+          change: 0,
+        }
+      : null,
+
+    skillGaps,
+
     matchedJobs: jobMatches.slice(0, 4).map((job) => ({
       role: job.title,
-      company: (job.company || '?').slice(0, 1).toUpperCase(),
+      company: (job.company || "?").slice(0, 1).toUpperCase(),
       companyName: job.company,
-      location: job.location || 'Remote / flexible',
+      location: job.location || "Remote / flexible",
       match: job.match?.score || 0,
     })),
 

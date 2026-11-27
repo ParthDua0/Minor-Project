@@ -203,6 +203,19 @@ function StatCard({
 /* -------------------------------------------------------------------------- */
 
 function SkillGapCard({ skillGaps = [] }) {
+  const [filter, setFilter] = useState("all"); // "all" | "unattempted" | "below70"
+
+  const unattemptedCount = skillGaps.filter((s) => !s.attempted).length;
+  const below70Count = skillGaps.filter((s) => s.attempted).length;
+
+  const filteredGaps = skillGaps.filter((skill) => {
+    if (filter === "unattempted") return !skill.attempted;
+    if (filter === "below70") return skill.attempted;
+    return true;
+  });
+
+  const visibleGaps = filteredGaps.slice(0, 5);
+
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
       <div className="flex items-start justify-between gap-4">
@@ -212,8 +225,7 @@ function SkillGapCard({ skillGaps = [] }) {
           </h2>
 
           <p className="mt-1 text-[11px] text-slate-400">
-            Skills companies are asking for that you haven't fully
-            built yet.
+            Skills not yet assessed or scored below the 70% verification benchmark.
           </p>
         </div>
 
@@ -221,50 +233,109 @@ function SkillGapCard({ skillGaps = [] }) {
           to="/skill-gaps"
           className="flex shrink-0 items-center gap-1 text-[11px] font-semibold text-teal-600 hover:text-teal-700"
         >
-          See all
+          Verify skills
           <ArrowRight size={13} />
         </NavLink>
       </div>
 
-      <div className="mt-6">
+      {/* Filter Pills */}
+      {skillGaps.length > 0 && (
+        <div className="mt-4 flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setFilter("all")}
+            className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition ${
+              filter === "all"
+                ? "bg-slate-900 text-white"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200/70"
+            }`}
+          >
+            All ({skillGaps.length})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setFilter("unattempted")}
+            className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition ${
+              filter === "unattempted"
+                ? "bg-slate-900 text-white"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200/70"
+            }`}
+          >
+            Not attempted ({unattemptedCount})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setFilter("below70")}
+            className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition ${
+              filter === "below70"
+                ? "bg-slate-900 text-white"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200/70"
+            }`}
+          >
+            Below 70% ({below70Count})
+          </button>
+        </div>
+      )}
+
+      <div className="mt-5">
         {skillGaps.length === 0 ? (
           <div className="rounded-xl border border-dashed border-slate-200 px-5 py-8 text-center">
-            <TrendingUp
+            <CheckCircle2
               size={22}
-              className="mx-auto text-slate-300"
+              className="mx-auto text-teal-500"
             />
 
             <p className="mt-3 text-xs font-medium text-slate-600">
-              Skill gap analysis isn't available yet
+              No unverified skills found
             </p>
 
             <p className="mx-auto mt-1 max-w-sm text-[11px] leading-4 text-slate-400">
-              Skill gaps will appear once your target-role
-              matching and analysis service is connected.
+              All extracted skills have scored 70% or higher, or you haven't uploaded a resume yet.
+            </p>
+          </div>
+        ) : visibleGaps.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-slate-200 px-5 py-6 text-center">
+            <p className="text-xs font-medium text-slate-600">
+              No skills in this filter
+            </p>
+            <p className="mt-1 text-[11px] text-slate-400">
+              Switch tabs above to view your remaining unverified skills.
             </p>
           </div>
         ) : (
-          <div className="space-y-5">
-            {skillGaps.map((skill) => {
-              const gap = Math.max(
-                0,
-                skill.required - skill.current
-              );
+          <div className="space-y-4">
+            {visibleGaps.map((skill) => {
+              const gap = Math.max(0, skill.required - skill.current);
 
               return (
                 <div key={skill.name}>
-                  <div className="mb-2 flex items-center justify-between gap-4">
-                    <span className="text-xs font-medium text-slate-700">
-                      {skill.name}
-                    </span>
+                  <div className="mb-1.5 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium capitalize text-slate-700">
+                        {skill.name}
+                      </span>
+                      {!skill.attempted && (
+                        <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
+                          Not tested
+                        </span>
+                      )}
+                    </div>
 
                     <span className="text-[10px] text-slate-400">
-                      You:{" "}
-                      <span className="font-semibold text-slate-600">
-                        {skill.current}%
-                      </span>
+                      {skill.attempted ? (
+                        <>
+                          Score:{" "}
+                          <span className="font-semibold text-amber-600">
+                            {skill.current}%
+                          </span>
+                        </>
+                      ) : (
+                        "0%"
+                      )}
                       {" · "}
-                      Needed:{" "}
+                      Target:{" "}
                       <span className="font-semibold text-slate-600">
                         {skill.required}%
                       </span>
@@ -273,7 +344,9 @@ function SkillGapCard({ skillGaps = [] }) {
 
                   <div className="relative h-2 overflow-hidden rounded-full bg-slate-100">
                     <div
-                      className="absolute left-0 top-0 h-full rounded-full bg-teal-500"
+                      className={`absolute left-0 top-0 h-full rounded-full ${
+                        skill.attempted ? "bg-amber-500" : "bg-slate-300"
+                      }`}
                       style={{
                         width: `${skill.current}%`,
                       }}
@@ -287,20 +360,34 @@ function SkillGapCard({ skillGaps = [] }) {
                     />
                   </div>
 
-                  <div className="mt-1.5 flex justify-between">
-                    <span className="text-[9px] text-slate-400">
-                      {gap}% gap remaining
+                  <div className="mt-1 flex justify-between">
+                    <span className="text-[10px] text-slate-400">
+                      {skill.attempted
+                        ? `${gap}% below verification threshold`
+                        : "Take 15-question assessment to verify"}
                     </span>
 
-                    {gap >= 40 && (
-                      <span className="text-[9px] font-medium text-orange-500">
-                        High priority
-                      </span> 
-                    )}
+                    <NavLink
+                      to="/skill-gaps"
+                      className="text-[10px] font-medium text-teal-600 hover:underline"
+                    >
+                      {skill.attempted ? "Retake test" : "Start test"}
+                    </NavLink>
                   </div>
                 </div>
               );
             })}
+
+            {filteredGaps.length > 5 && (
+              <div className="pt-1 text-center">
+                <NavLink
+                  to="/skill-gaps"
+                  className="text-[11px] font-medium text-slate-500 hover:text-teal-600"
+                >
+                  +{filteredGaps.length - 5} more unverified skills →
+                </NavLink>
+              </div>
+            )}
           </div>
         )}
       </div>
