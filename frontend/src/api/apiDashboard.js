@@ -1,25 +1,20 @@
-
 import { getUserInfo } from "./apiAuth";
 import { getJobs } from "./apiCareer";
 
 export async function getDashboardData() {
   const response = await getUserInfo();
-
   let jobMatches = [];
-
   try {
     const jobData = await getJobs();
-    jobMatches = Array.isArray(jobData?.jobs)
-      ? jobData.jobs
-      : [];
+    jobMatches = jobData.jobs || [];
   } catch (error) {
-    console.warn("Job matches are unavailable", error);
+    // A recruiter account or an unavailable jobs service should not prevent
+    // the profile dashboard from loading.
+    console.warn('Job matches are unavailable', error);
   }
 
-  // Correct backend response structure:
-  // response.user.profile
   const user = response?.user || {};
-  const profile = user?.profile || {};
+  const profile = response || {};
 
   const parsedSkills = Array.isArray(profile.parsedSkills)
     ? profile.parsedSkills
@@ -37,65 +32,28 @@ export async function getDashboardData() {
     ? profile.targetRoles
     : [];
 
-  const workPreference = Array.isArray(profile.workPreference)
-    ? profile.workPreference
-    : [];
-
-  // Calculate profile completion using actual saved information.
+  /*
+   * These values are not available from /user-info yet.
+   * Do NOT use fake/mock values here.
+   */
   const profileFields = [
-    Boolean(user.fullname?.trim()),
-    Boolean(user.email?.trim()),
-    Boolean(user.graduationYear),
-    Boolean(profile.branch?.trim()),
-    profile.cgpa !== undefined && profile.cgpa !== null,
-    Boolean(profile.currentYear),
-    Boolean(profile.resumeFileUrl),
+    user.fullname,
+    user.email,
+    user.graduationYear,
+    profile.branch,
+    profile.cgpa,
+    profile.currentYear,
+    profile.resume?.url,
     targetRoles.length > 0,
-    Boolean(profile.customGoal?.trim()),
+    profile.customGoal,
     parsedSkills.length > 0,
-    education.some(
-      (item) =>
-        item.degree?.trim() ||
-        item.branch?.trim() ||
-        item.institute?.trim()
-    ),
-    experience.some(
-      (item) =>
-        item.title?.trim() ||
-        item.org?.trim() ||
-        item.description?.trim()
-    ),
   ];
 
   const completedFields = profileFields.filter(Boolean).length;
 
-  const profileCompletion = Math.round(
+  const profileCompletion = response?.profileCompletion ?? Math.round(
     (completedFields / profileFields.length) * 100
   );
-
-  // Only use readiness if the backend actually provides it.
-  const readinessData = user.readiness || null;
-
-  const readiness =
-    typeof readinessData?.score === "number"
-      ? {
-          score: readinessData.score,
-          change:
-            typeof readinessData.change === "number"
-              ? readinessData.change
-              : null,
-          status: readinessData.status || null,
-          description: readinessData.description || null,
-        }
-      : null;
-
-  const matchedJobs = jobMatches.slice(0, 4).map((job) => ({
-    role: job.title || "Untitled role",
-    company: (job.company || "?").slice(0, 1).toUpperCase(),
-    companyName: job.company || "Unknown company",
-    location: job.location || "Location not specified",
-    match: job.match?.score ?? 0,
-  }));
 
   return {
     user: {
@@ -113,8 +71,8 @@ export async function getDashboardData() {
       targetRoles,
       customGoal: profile.customGoal || "",
       employmentType: profile.employmentType || "",
-      workPreference,
-      resumeFileUrl: profile.resumeFileUrl || "",
+      workPreference: profile.workPreference || [],
+      resumeFileUrl: profile.resume?.url || "",
       parsedSkills,
       education,
       experience,
@@ -125,42 +83,39 @@ export async function getDashboardData() {
 
     stats: {
       profileCompletion,
-      verifiedSkills: null,
+      verifiedSkills: 0,
       totalSkills: parsedSkills.length,
-      matchedJobs: jobMatches.filter(
-        (job) => job.match?.isFit
-      ).length,
-      activeApplications: null,
+      matchedJobs: jobMatches.filter((job) => job.match?.isFit).length,
+      activeApplications: 0,
     },
 
-    readiness,
-
+    /*
+     * These will be connected to real backend APIs later.
+     */
+    readiness: parsedSkills.length ? { score: Math.round((profileCompletion * 0.4) + (Math.min(parsedSkills.length, 10) * 6)), change: 0 } : null,
     skillGaps: [],
-
-    matchedJobs,
+    matchedJobs: jobMatches.slice(0, 4).map((job) => ({
+      role: job.title,
+      company: (job.company || '?').slice(0, 1).toUpperCase(),
+      companyName: job.company,
+      location: job.location || 'Remote / flexible',
+      match: job.match?.score || 0,
+    })),
 
     nextStep: {
       title:
-        !profile.resumeFileUrl
-          ? "Upload your resume"
+        experience.length === 0
+          ? "Add your experience"
           : parsedSkills.length === 0
-            ? "Complete your skills"
-            : experience.length === 0
-              ? "Add your experience"
-              : targetRoles.length === 0
-                ? "Set your career goals"
-                : "Explore your job matches",
+          ? "Complete your skills"
+          : "Keep improving your profile",
 
       description:
-        !profile.resumeFileUrl
-          ? "Upload your resume to begin extracting your skills and experience."
+        experience.length === 0
+          ? "Add projects, internships, or work experience to strengthen your placement profile."
           : parsedSkills.length === 0
-            ? "Your resume has not provided any parsed skills yet."
-            : experience.length === 0
-              ? "Add projects, internships, or work experience to strengthen your profile."
-              : targetRoles.length === 0
-                ? "Choose your target roles to improve job matching."
-                : "Explore opportunities matching your profile.",
+          ? "Your resume has not provided any parsed skills yet."
+          : "Your profile is ready for the next stage of placement preparation.",
 
       action: "View profile",
     },

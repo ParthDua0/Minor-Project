@@ -411,53 +411,6 @@ function JobMatchesCard({ matchedJobs = [] }) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* NEXT STEP                                                                  */
-/* -------------------------------------------------------------------------- */
-
-function NextStepCard({ nextStep }) {
-  if (!nextStep) {
-    return null;
-  }
-
-  return (
-    <section className="relative overflow-hidden rounded-2xl bg-slate-900 p-5 text-white sm:p-6">
-      <div className="absolute -right-8 -top-10 h-32 w-32 rounded-full bg-teal-500/10 blur-2xl" />
-
-      <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="mb-2 flex items-center gap-2">
-            <Sparkles
-              size={15}
-              className="text-teal-400"
-            />
-
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-teal-400">
-              Recommended next step
-            </span>
-          </div>
-
-          <h2 className="text-sm font-semibold">
-            {nextStep.title}
-          </h2>
-
-          <p className="mt-1 max-w-xl text-[11px] leading-5 text-slate-400">
-            {nextStep.description}
-          </p>
-        </div>
-
-        <button
-          type="button"
-          className="flex shrink-0 items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-xs font-semibold text-slate-900 transition hover:bg-slate-100"
-        >
-          {nextStep.action}
-          <ArrowRight size={14} />
-        </button>
-      </div>
-    </section>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
 /* LOADING STATE                                                              */
 /* -------------------------------------------------------------------------- */
 
@@ -698,12 +651,6 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* Recommended next step */}
-        <div className="mt-4">
-          <NextStepCard
-            nextStep={dashboard.nextStep}
-          />
-        </div>
       </main>
     </AppLayout>
   );
