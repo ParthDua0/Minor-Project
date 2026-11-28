@@ -6,3 +6,4 @@ export const createJob = (job) => api.post('/jobs', job, { headers: headers() })
 export const getQuestions = (skill) => api.get(`/assessments/questions/${encodeURIComponent(skill)}`, { headers: headers() }).then((r) => r.data);
 export const submitAssessment = (payload) => api.post('/assessments', payload, { headers: headers() }).then((r) => r.data);
 export const getAssessments = () => api.get('/assessments', { headers: headers() }).then((r) => r.data);
+export const getReadiness = () => api.get('/readiness', { headers: headers() }).then((r) => r.data);

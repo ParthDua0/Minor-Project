@@ -1,5 +1,5 @@
 import { getUserInfo } from "./apiAuth";
-import { getAssessments, getJobs } from "./apiCareer";
+import { getAssessments, getJobs, getReadiness } from "./apiCareer";
 
 export async function getDashboardData() {
   const response = await getUserInfo();
@@ -18,6 +18,13 @@ export async function getDashboardData() {
     assessments = assessmentData.assessments || [];
   } catch (error) {
     console.warn("Assessments are unavailable", error);
+  }
+
+  let readinessData = { readiness: null, skillDetails: [], requiredSkills: [], passedSkills: [] };
+  try {
+    readinessData = await getReadiness();
+  } catch (error) {
+    console.warn("Readiness is unavailable", error);
   }
 
   const user = response?.user || {};
@@ -44,37 +51,23 @@ export async function getDashboardData() {
     assessments.map((a) => [a.skill.toLowerCase(), a])
   );
 
-  // Merge resume skills and any custom-assessed skills
-  const allUniqueSkills = [
-    ...new Set([
-      ...parsedSkills.map((s) => s.trim()),
-      ...assessments.map((a) => a.skill.trim()),
-    ]),
-  ];
-
-  // Unverified = not attempted yet OR score < 70%
-  const skillGaps = allUniqueSkills
-    .map((skill) => {
-      const record = assessmentMap.get(skill.toLowerCase());
-      const current = record ? record.score : 0;
-      const attempted = Boolean(record);
-
-      return {
-        name: skill,
-        current,
-        required: 70,
-        attempted,
-        level: record?.level || "Unverified",
-      };
-    })
-    .filter((item) => !item.attempted || item.current < 70)
+  // Only role-required skills belong in readiness; resume and manual skills do not.
+  const skillGaps = (readinessData.skillDetails || [])
+    .filter((detail) => !detail.passed)
+    .map((detail) => ({
+      name: detail.skill,
+      current: detail.score || 0,
+      required: 70,
+      attempted: detail.assessed,
+      level: assessmentMap.get(detail.skill)?.level || "Unverified",
+    }))
     // Sort: attempted (< 70%) first by lowest score, then unattempted
     .sort((a, b) => {
       if (a.attempted !== b.attempted) return a.attempted ? -1 : 1;
       return a.current - b.current;
     });
 
-  const verifiedCount = allUniqueSkills.length - skillGaps.length;
+  const verifiedCount = (readinessData.passedSkills || []).length;
 
   const profileFields = [
     user.fullname,
@@ -124,19 +117,15 @@ export async function getDashboardData() {
     stats: {
       profileCompletion,
       verifiedSkills: verifiedCount,
-      totalSkills: parsedSkills.length,
+      totalSkills: (readinessData.requiredSkills || []).length,
       matchedJobs: jobMatches.filter((job) => job.match?.isFit).length,
       activeApplications: 0,
     },
 
-    readiness: parsedSkills.length
-      ? {
-          score: Math.round(
-            profileCompletion * 0.4 + Math.min(parsedSkills.length, 10) * 6
-          ),
-          change: 0,
-        }
-      : null,
+    readiness:
+      readinessData.readiness?.score === null || readinessData.readiness?.score === undefined
+        ? null
+        : readinessData.readiness,
 
     skillGaps,
 

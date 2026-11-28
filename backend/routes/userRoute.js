@@ -6,6 +6,7 @@ const upload = require("../middleware/upload-middleware");
 const authMiddleware = require("../middleware/auth-middleware");
 const { createJob, listJobs, matchedJobs, recruiterJobs } = require('../controller/jobController');
 const { getQuestions, submitAssessment, myAssessments } = require('../controller/assessmentController');
+const { getReadiness } = require('../controller/readinessController');
 const { runCode } = require('../controller/compilerController');
 
 router.post("/login", loginUser);
@@ -36,6 +37,7 @@ router.get('/jobs/matches', authMiddleware, matchedJobs);
 router.get('/assessments', authMiddleware, myAssessments);
 router.get('/assessments/questions/:skill', authMiddleware, getQuestions);
 router.post('/assessments', authMiddleware, submitAssessment);
+router.get('/readiness', authMiddleware, getReadiness);
 router.post('/compiler/run', authMiddleware, runCode);
 
 module.exports = router;

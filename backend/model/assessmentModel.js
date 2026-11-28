@@ -5,6 +5,7 @@ const assessmentSchema = new mongoose.Schema({
   skill: { type: String, required: true, lowercase: true, trim: true },
   answers: [{ questionId: String, answer: String, correct: Boolean }],
   score: { type: Number, min: 0, max: 100, required: true },
+  passed: { type: Boolean, required: true, default: false },
   level: { type: String, enum: ['Beginner', 'Developing', 'Proficient', 'Job ready'], required: true }
 }, { timestamps: true });
 
